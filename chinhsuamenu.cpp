@@ -5,7 +5,6 @@ using namespace std;
 
 #define H 20
 #define GAME_W 40
-#define INFO_W 32
 
 #define OFFSET_X 20
 #define OFFSET_Y 2
@@ -109,7 +108,6 @@ void initBoard(){
 
         for (int j = 0 ; j < GAME_W ; j++){
 
-            // duoi
             if (i == H-1){
 
                 if (j == 0)
@@ -128,14 +126,12 @@ void initBoard(){
                     board[i][j] = '=';
             }
 
-            // trai
             else if (j == 0)
                 board[i][j] = '<';
 
             else if (j == 1)
                 board[i][j] = '!';
 
-            // phai
             else if (j == GAME_W-2)
                 board[i][j] = '!';
 
@@ -229,25 +225,23 @@ void drawNextBlock(){
 }
 
 void drawInfo(){
-gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y);
-cout << " _____ _____ _____ _____ __ _____ ";
 
-gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 1);
-cout << "|_   _|   __|_   _| __  |  |   __|";
+    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y);
+    cout << "╔══════════╗";
 
-gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 2);
-cout << "  | | |   __| | | |    -|  |__   |";
+    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 1);
+    cout << "║  TETRIS  ║";
 
-gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 3);
-cout << "  |_| |_____| |_| |__|__|__|_____|";
+    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 2);
+    cout << "╚══════════╝";
 
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 6);
+    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 5);
     cout << "SCORE : " << score;
 
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 8);
-    cout << "HIGH  : " << highScore;
+    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 7);
+    cout << "HIGH SCORE  : " << highScore;
 
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 10);
+    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 9);
     cout << "LEVEL : " << level;
 
     drawNextBlock();
@@ -274,6 +268,7 @@ void draw(){
 void drawMenu(){
 
     system("cls");
+    system("color 0A");
 
     cout << R"(
 
@@ -296,19 +291,26 @@ void drawMenu(){
 )";
 
     cout << "\n";
-    cout << "                    HIGH SCORE : 0\n\n";
 
-    cout << "                    PRESS ENTER TO START\n\n";
 
-    cout << "                    CONTROLS\n\n";
+    cout << "                 >> START GAME\n";
+    cout << "                    HIGH SCORE : " << highScore << "\n";
+    cout << "                    PRESS ENTER\n\n";
 
-    cout << "                    A : DI CHUYEN QUA TRAI\n";
-    cout << "                    D : DI CHUYEN QUA PHAI\n";
-    cout << "                    X : DI CHUYEN XUONG DUOI\n";
-    cout << "                    Q : THOAT\n";
+    cout << "          ╔════════ CONTROLS ═══════════╗\n";
+    cout << "          ║  [A] DI CHUYEN QUA TRAI     ║\n";
+    cout << "          ║  [D] DI CHUYEN QUA PHAI     ║\n";
+    cout << "          ║  [X] DI CHUYEN XUONG DUOI   ║\n";
+    cout << "          ║  [Q] THOAT GAME             ║\n";
+    cout << "          ╚═════════════════════════════╝\n";
 }
 
 int main(){
+
+    system("chcp 65001 > nul");
+
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
 
     system("cls");
     system("color 0A");
@@ -367,7 +369,7 @@ int main(){
 
         draw();
 
-        Sleep(max(50, 200 - level * 10));;
+        Sleep(max(50, 200 - level * 10));
     }
 
     return 0;
