@@ -2,8 +2,8 @@
 #include <conio.h>
 #include <windows.h>
 using namespace std;
-#define H 15
-#define W 30
+#define H 20
+#define W 15
 char board[H][W] = {} ;
 char blocks[][4][4] = {
         {{' ','I',' ',' '},
@@ -146,7 +146,7 @@ int main()
         else {
             block2Board();
             removeLine();
-            x = (W-2) / 2; y = 0; b = rand() % 7;
+            x = 5; y = 0; b = rand() % 7;
         }
         block2Board();
         draw();
