@@ -127,6 +127,38 @@ void removeLine(){
     }
 }
 
+
+void rotateBlock() {
+    char rotated[4][4];
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            rotated[j][3 - i] = blocks[b][i][j];
+
+    bool canRotate = true;
+    for (int i = 0; i < 4 && canRotate; i++)
+        for (int j = 0; j < 4; j++)
+            if (rotated[i][j] != ' ') {
+                int tx = x + j;
+                int ty = y + i;
+                if (tx < 1 || tx >= W - 1 || ty >= H - 1) {
+                    canRotate = false;
+                    break;
+                }
+                if (ty >= 0 && board[ty][tx] != ' ') {
+                    canRotate = false;
+                    break;
+                }
+            }
+
+    if (canRotate) {
+        boardDelBlock();
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                blocks[b][i][j] = rotated[i][j];
+        block2Board();
+    }
+}
+
 int main()
 {
     srand(time(0));
