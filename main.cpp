@@ -10,42 +10,6 @@ char blocks[][4][4] = {
          {' ','I',' ',' '},
          {' ','I',' ',' '},
          {' ','I',' ',' '}},
-        {{' ','I',' ',' '},
-         {' ','I',' ',' '},
-         {' ','I',' ',' '},
-         {' ','I',' ',' '}},
-        {{' ',' ',' ',' '},
-         {' ','O','O',' '},
-         {' ','O','O',' '},
-         {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '},
-         {' ','O','O',' '},
-         {' ','O','O',' '},
-         {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '},
-         {' ','O','O',' '},
-         {' ','O','O',' '},
-         {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '},
-         {' ','O','O',' '},
-         {' ','O','O',' '},
-         {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '},
-         {' ','O','O',' '},
-         {' ','O','O',' '},
-         {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '},
-         {' ','O','O',' '},
-         {' ','O','O',' '},
-         {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '},
-         {' ','O','O',' '},
-         {' ','O','O',' '},
-         {' ',' ',' ',' '}},
-        {{' ',' ',' ',' '},
-         {'I','I','I','I'},
-         {' ',' ',' ',' '},
-         {' ',' ',' ',' '}},
         {{' ',' ',' ',' '},
          {' ','O','O',' '},
          {' ','O','O',' '},
@@ -122,43 +86,47 @@ void removeLine(){
                 for (int j = 0; j < W-1 ; j++ ) board[ii][j] = board[ii-1][j];
             i++;
             draw();
-            _sleep(200);
+            Sleep(200);
         }
     }
 }
 
-
-void rotateBlock() {
+void rotateBlock() 
+{
+    boardDelBlock();
     char rotated[4][4];
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 4; j++)
             rotated[j][3 - i] = blocks[b][i][j];
-
     bool canRotate = true;
-    for (int i = 0; i < 4 && canRotate; i++)
-        for (int j = 0; j < 4; j++)
-            if (rotated[i][j] != ' ') {
+    for (int i = 0; i < 4 && canRotate; i++) 
+    {
+        for (int j = 0; j < 4; j++) 
+        {
+            if (rotated[i][j] != ' ') 
+            {
                 int tx = x + j;
                 int ty = y + i;
-                if (tx < 1 || tx >= W - 1 || ty >= H - 1) {
+                if (tx < 1 || tx >= W - 1 || ty >= H - 1) 
+                {
                     canRotate = false;
                     break;
                 }
-                if (ty >= 0 && board[ty][tx] != ' ') {
+                if (board[ty][tx] != ' ') 
+                {
                     canRotate = false;
                     break;
                 }
             }
+        }
+    }
 
     if (canRotate) {
-        boardDelBlock();
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
                 blocks[b][i][j] = rotated[i][j];
-        block2Board();
     }
 }
-
 int main()
 {
     srand(time(0));
@@ -167,11 +135,12 @@ int main()
     initBoard();
     while (1){
         boardDelBlock();
-        if (kbhit()){
-            char c = getch();
+        if (_kbhit()){
+            char c = _getch();
             if (c=='a' && canMove(-1,0)) x--;
             if (c=='d' && canMove(1,0) ) x++;
             if (c=='x' && canMove(0,1))  y++;
+            if (c == 'w') rotateBlock();
             if (c=='q') break;
         }
         if (canMove(0,1)) y++;
@@ -182,7 +151,7 @@ int main()
         }
         block2Board();
         draw();
-        _sleep(200);
+        Sleep(200);
     }
     return 0;
 }
