@@ -44,7 +44,7 @@ void gotoxy(int x, int y) {
 void boardDelBlock(){
     for (int i = 0 ; i < 4 ; i++)
         for (int j = 0 ; j < 4 ; j++)
-            if (blocks[b][i][j] != ' ' && y+j < H)
+            if (blocks[b][i][j] != ' ' && y+i < H)
                 board[y+i][x+j] = ' ';
 }
 void block2Board(){
@@ -91,37 +91,57 @@ void removeLine(){
     }
 }
 
-void rotateBlock() 
+void rotateBlock()
 {
     boardDelBlock();
+
     char rotated[4][4];
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 4; j++)
             rotated[j][3 - i] = blocks[b][i][j];
-    bool canRotate = true;
-    for (int i = 0; i < 4 && canRotate; i++) 
+
+    int kick[] = { 0, 1, -1, 2, -2 };
+    int newX = x;
+    bool canRotate = false;
+
+    for (int k = 0; k < 5 && !canRotate; k++)
     {
-        for (int j = 0; j < 4; j++) 
+        bool ok = true;
+        int testX = x + kick[k];
+
+        for (int i = 0; i < 4 && ok; i++)
         {
-            if (rotated[i][j] != ' ') 
+            for (int j = 0; j < 4; j++)
             {
-                int tx = x + j;
-                int ty = y + i;
-                if (tx < 1 || tx >= W - 1 || ty >= H - 1) 
+                if (rotated[i][j] != ' ')
                 {
-                    canRotate = false;
-                    break;
-                }
-                if (board[ty][tx] != ' ') 
-                {
-                    canRotate = false;
-                    break;
+                    int tx = testX + j;
+                    int ty = y + i;
+
+                    if (tx < 1 || tx >= W - 1 || ty >= H - 1)
+                    {
+                        ok = false;
+                        break;
+                    }
+
+                    if (board[ty][tx] != ' ')
+                    {
+                        ok = false;
+                        break;
+                    }
                 }
             }
+        }
+
+        if (ok) {
+            canRotate = true;
+            newX = testX;
         }
     }
 
     if (canRotate) {
+        x = newX;
+
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
                 blocks[b][i][j] = rotated[i][j];
