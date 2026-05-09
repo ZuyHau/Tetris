@@ -189,8 +189,7 @@ void removeLine() {
             levelUpTimer = 15;
         }
         
-        // Chỉ vẽ lại màn hình 1 lần sau khi cập nhật toàn bộ mảng xong
-        // Loại bỏ Sleep ở đây để game không bị khựng lại
+       
     }
 }
 
