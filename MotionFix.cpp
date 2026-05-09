@@ -210,6 +210,18 @@ void rotateBlock() {
                 blocks[b][i][j] = rotated[i][j];
     }
 }
+
+void hideCursor()
+{
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    CONSOLE_CURSOR_INFO info;
+
+    info.dwSize = 100;
+    info.bVisible = FALSE;
+
+    SetConsoleCursorInfo(h, &info);
+}
 void draw();
 
 void removeLine(){
@@ -369,6 +381,7 @@ int main(){
     system("chcp 65001 > nul");
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+    hideCursor();
     srand(time(0));
 
     drawMenu();
