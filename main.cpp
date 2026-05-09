@@ -40,16 +40,16 @@ char blocks[][4][4] = {
          {' ',' ',' ',' '}}
 };
 
-int x=4,y=0,b=1;
+int x=4, y=0, b=1;
 
-// --- CÁC BIẾN MỚI CHO UI ---
+//  CÁC BIẾN MỚI CHO UI 
 int score = 0;
 int currentLevel = 1;
 int linesClearedTotal = 0;
 
 bool isLevelUp = false;
 int levelUpTimer = 0;
-// ---------------------------
+
 
 void gotoxy(int x, int y) {
     COORD c = { (SHORT)x, (SHORT)y };
@@ -77,34 +77,31 @@ void initBoard(){
             else board[i][j] = ' ';
 }
 
-// --- HÀM MỚI ĐỂ VẼ UI ---
+//  HÀM VẼ GIAO DIỆN UI 
 void drawUI() {
-    int uiX = W + 5; // Toạ độ X nằm bên phải của bảng game
+    int uiX = W + 5; 
 
-    // [Task 1 & 2] Vẽ nhãn và cập nhật số liệu
-    // In thêm khoảng trắng phía sau để ghi đè/xóa các số cũ dài hơn nếu có
     gotoxy(uiX, 3); cout << "SCORE: " << score << "       ";
     gotoxy(uiX, 5); cout << "LEVEL: " << currentLevel << "       ";
     gotoxy(uiX, 7); cout << "LINES: " << linesClearedTotal << "       ";
 
-    // [Task 3] Hiển thị thông báo Level Up với hiệu ứng nhấp nháy
     if (isLevelUp) {
         gotoxy(uiX, 10);
-        if (levelUpTimer % 2 == 0) { // Nhấp nháy theo frame chẵn/lẻ
+        if (levelUpTimer % 2 == 0) { 
             cout << "!!! LEVEL UP !!!";
         } else {
-            cout << "                "; // Xóa text để tạo cảm giác nhấp nháy
+            cout << "                "; 
         }
         
         levelUpTimer--;
         if (levelUpTimer <= 0) {
-            isLevelUp = false; // Tắt cờ khi hết thời gian
+            isLevelUp = false; 
             gotoxy(uiX, 10);
-            cout << "                "; // Xóa hẳn dòng chữ để làm sạch màn hình
+            cout << "                "; 
         }
     }
 }
-// ------------------------
+
 
 void draw(){
     gotoxy(0,0);
@@ -112,7 +109,7 @@ void draw(){
         for (int j = 0 ; j < W ; j++)
             cout<<board[i][j];
             
-    drawUI(); // Gọi hàm vẽ UI ngay sau khi vẽ bảng game
+    drawUI(); // Vẽ UI ngay sau khi vẽ bảng game
 }
 
 bool canMove(int dx, int dy){
@@ -127,46 +124,74 @@ bool canMove(int dx, int dy){
     return true;
 }
 
-// Dummy rotateBlock để code có thể chạy được, bạn hãy thay bằng logic xoay của mình
+// Dummy rotateBlock để code biên dịch được (Bạn chèn logic xoay vào đây)
 void rotateBlock() {
-    // Thêm code xoay ma trận blocks[b] ở đây
+    // Logic xoay khối của bạn
 }
 
-void removeLine(){
-    int j;
-    int linesClearedNow = 0; // Biến đếm số dòng ăn được trong 1 lần
+// HÀM XÓA DÒNG ĐƯỢC REFACTOR 
+void removeLine() {
+    int linesClearedNow = 0;
+    
+    // Thuật toán 2 con trỏ: Duyệt từ dưới lên
+    int write_row = H - 2; 
 
-    for (int i = H-2; i >0 ; i-- ){
-        for (j = 0; j < W-1 ; j++)
-            if (board[i][j] == ' ') break;
-        if (j == W-1){
-            linesClearedNow++; // Tăng biến đếm dòng
+    for (int read_row = H - 2; read_row >= 0; read_row--) {
+        // Kiểm tra hàng đã đầy chưa
+        bool isFull = true;
+        for (int j = 1; j < W - 1; j++) { 
+            if (board[read_row][j] == ' ') {
+                isFull = false;
+                break;
+            }
+        }
 
-            for (int ii = i; ii >0 ; ii-- )
-                for (int j = 0; j < W-1 ; j++ ) board[ii][j] = board[ii-1][j];
-            i++;
-            draw();
-            Sleep(200);
+        if (isFull) {
+            // Xóa dữ liệu hàng đó (gián tiếp bằng cách bỏ qua, không ghi xuống)
+            linesClearedNow++;
+        } else {
+            // Cập nhật tọa độ (dịch xuống)
+            if (write_row != read_row) {
+                for (int j = 1; j < W - 1; j++) {
+                    board[write_row][j] = board[read_row][j];
+                }
+            }
+            write_row--; 
         }
     }
 
-    // --- LOGIC CẬP NHẬT ĐIỂM SỐ & LEVEL MỚI ---
+    // Làm sạch các hàng trống phía trên cùng
+    while (write_row >= 0) {
+        for (int j = 1; j < W - 1; j++) {
+            board[write_row][j] = ' ';
+        }
+        write_row--;
+    }
+
+    // Cập nhật điểm số
     if (linesClearedNow > 0) {
         linesClearedTotal += linesClearedNow;
         
-        // Tính điểm: Ăn nhiều dòng cùng lúc điểm càng cao
-        score += linesClearedNow * 100 * currentLevel; 
+        int pointsEarned = 0;
+        switch(linesClearedNow) {
+            case 1: pointsEarned = 100; break;
+            case 2: pointsEarned = 300; break;
+            case 3: pointsEarned = 500; break;
+            case 4: pointsEarned = 800; break; 
+            default: pointsEarned = linesClearedNow * 200; break;
+        }
+        score += pointsEarned * currentLevel; 
 
-        // Logic tính level: Mỗi 5 dòng lên 1 cấp
         int newLevel = (linesClearedTotal / 5) + 1;
-        
         if (newLevel > currentLevel) {
             currentLevel = newLevel;
-            isLevelUp = true;    // Bật cờ hiệu ứng
-            levelUpTimer = 15;   // Hiển thị trong 15 frames (khoảng 3 giây do có Sleep)
+            isLevelUp = true;
+            levelUpTimer = 15;
         }
+        
+        // Chỉ vẽ lại màn hình 1 lần sau khi cập nhật toàn bộ mảng xong
+        // Loại bỏ Sleep ở đây để game không bị khựng lại
     }
-    // ------------------------------------------
 }
 
 int main()
@@ -181,7 +206,7 @@ int main()
             char c = _getch();
             if (c=='a' && canMove(-1,0)) x--;
             if (c=='d' && canMove(1,0) ) x++;
-            if (c=='s' && canMove(0,1))  y++; // Đổi 'x' thành 's' cho chuẩn WASD nếu bạn muốn
+            if (c=='x' && canMove(0,1))  y++;
             if (c=='w') rotateBlock();
             if (c=='q') break;
         }
