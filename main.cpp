@@ -91,62 +91,7 @@ void removeLine(){
     }
 }
 
-void rotateBlock()
-{
-    boardDelBlock();
 
-    char rotated[4][4];
-    for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-            rotated[j][3 - i] = blocks[b][i][j];
-
-    int kick[] = { 0, 1, -1, 2, -2 };
-    int newX = x;
-    bool canRotate = false;
-
-    for (int k = 0; k < 5 && !canRotate; k++)
-    {
-        bool ok = true;
-        int testX = x + kick[k];
-
-        for (int i = 0; i < 4 && ok; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                if (rotated[i][j] != ' ')
-                {
-                    int tx = testX + j;
-                    int ty = y + i;
-
-                    if (tx < 1 || tx >= W - 1 || ty >= H - 1)
-                    {
-                        ok = false;
-                        break;
-                    }
-
-                    if (board[ty][tx] != ' ')
-                    {
-                        ok = false;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (ok) {
-            canRotate = true;
-            newX = testX;
-        }
-    }
-
-    if (canRotate) {
-        x = newX;
-
-        for (int i = 0; i < 4; i++)
-            for (int j = 0; j < 4; j++)
-                blocks[b][i][j] = rotated[i][j];
-    }
-}
 int main()
 {
     srand(time(0));
