@@ -1,6 +1,7 @@
 #include <iostream>
 #include <conio.h>
 #include <windows.h>
+#include <ctime>
 using namespace std;
 
 #define H 20
@@ -23,7 +24,7 @@ char blocks[][4][4] = {
     {
         {' ',' ',' ',' '},
         {'I','I','I','I'},
-        {' ',' ',' ',' '},
+        {' ',' ',' ',' '},      
         {' ',' ',' ',' '}
     },
 
@@ -166,6 +167,50 @@ bool canMove(int dx, int dy){
 
     return true;
 }
+
+void rotateBlock() {
+    boardDelBlock(); 
+    char rotated[4][4]; 
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            rotated[j][3 - i] = blocks[b][i][j];
+
+    
+    int kick[] = { 0, 1, -1, 2, -2 };
+    int newX = x;
+    bool canRotate = false;
+
+    for (int k = 0; k < 5 && !canRotate; k++) {
+        bool ok = true;
+        int testX = x + kick[k];
+
+        for (int i = 0; i < 4 && ok; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (rotated[i][j] != ' ') {
+                    int tx = testX + j;
+                    int ty = y + i;
+                    
+                    if (tx < 2 || tx >= GAME_W - 2 || ty >= H - 1 || board[ty][tx] != ' ') {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (ok) {
+            canRotate = true;
+            newX = testX;
+        }
+    }
+
+    if (canRotate) {
+        x = newX;
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                blocks[b][i][j] = rotated[i][j];
+    }
+}
+void draw();
 
 void removeLine(){
 
@@ -315,76 +360,50 @@ void drawMenu(){
     cout << "          ║  [A] DI CHUYEN QUA TRAI     ║\n";
     cout << "          ║  [D] DI CHUYEN QUA PHAI     ║\n";
     cout << "          ║  [X] DI CHUYEN XUONG DUOI   ║\n";
+    cout << "          ║  [W] XOAY                   ║\n";
     cout << "          ║  [Q] THOAT GAME             ║\n";
     cout << "          ╚═════════════════════════════╝\n";
 }
 
 int main(){
-
     system("chcp 65001 > nul");
-
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-
-    system("cls");
-    system("color 0A");
-
     srand(time(0));
 
     drawMenu();
-
     while (getch() != 13);
-
     system("cls");
 
+    initBoard();
     b = rand() % 8;
     nextBlock = rand() % 8;
 
-    initBoard();
-
     while (1){
-
         boardDelBlock();
-
         if (kbhit()){
-
             char c = getch();
-
-            if (c == 'a' && canMove(-1,0))
-                x--;
-
-            if (c == 'd' && canMove(1,0))
-                x++;
-
-            if (c == 'x' && canMove(0,1))
-                y++;
-
-            if (c == 'q')
-                break;
+            if (c == 'a' && canMove(-1,0)) x--;
+            if (c == 'd' && canMove(1,0)) x++;
+            if (c == 'x' && canMove(0,1)) y++;
+            if (c == 'w') rotateBlock(); 
+            if (c == 'q') break;
         }
 
-        if (canMove(0,1))
-            y++;
-
-        else{
-
+        if (canMove(0,1)) y++;
+        else {
             block2Board();
-
             removeLine();
-
             x = (GAME_W - 2) / 2;
             y = 0;
-
             b = nextBlock;
             nextBlock = rand() % 8;
+            if (!canMove(0,0)) break; 
         }
 
         block2Board();
-
         draw();
-
         Sleep(max(50, 200 - level * 10));
     }
-
     return 0;
 }
