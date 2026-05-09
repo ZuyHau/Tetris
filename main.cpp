@@ -42,14 +42,14 @@ char blocks[][4][4] = {
 
 int x=4, y=0, b=1;
 
-//  CÁC BIẾN MỚI CHO UI 
+// --- CÁC BIẾN MỚI CHO UI ---
 int score = 0;
 int currentLevel = 1;
 int linesClearedTotal = 0;
 
 bool isLevelUp = false;
 int levelUpTimer = 0;
-
+// ---------------------------
 
 void gotoxy(int x, int y) {
     COORD c = { (SHORT)x, (SHORT)y };
@@ -77,9 +77,9 @@ void initBoard(){
             else board[i][j] = ' ';
 }
 
-//  HÀM VẼ GIAO DIỆN UI 
+// --- HÀM VẼ GIAO DIỆN UI ---
 void drawUI() {
-    int uiX = W + 5; 
+    int uiX = W + 5;
 
     gotoxy(uiX, 3); cout << "SCORE: " << score << "       ";
     gotoxy(uiX, 5); cout << "LEVEL: " << currentLevel << "       ";
@@ -87,28 +87,28 @@ void drawUI() {
 
     if (isLevelUp) {
         gotoxy(uiX, 10);
-        if (levelUpTimer % 2 == 0) { 
+        if (levelUpTimer % 2 == 0) {
             cout << "!!! LEVEL UP !!!";
         } else {
-            cout << "                "; 
+            cout << "                ";
         }
-        
+
         levelUpTimer--;
         if (levelUpTimer <= 0) {
-            isLevelUp = false; 
+            isLevelUp = false;
             gotoxy(uiX, 10);
-            cout << "                "; 
+            cout << "                ";
         }
     }
 }
-
+// ---------------------------
 
 void draw(){
     gotoxy(0,0);
     for (int i = 0 ; i < H ; i++, cout<<endl)
         for (int j = 0 ; j < W ; j++)
             cout<<board[i][j];
-            
+
     drawUI(); // Vẽ UI ngay sau khi vẽ bảng game
 }
 
@@ -129,17 +129,17 @@ void rotateBlock() {
     // Logic xoay khối của bạn
 }
 
-// HÀM XÓA DÒNG ĐƯỢC REFACTOR 
+// --- HÀM XÓA DÒNG ĐƯỢC REFACTOR ---
 void removeLine() {
     int linesClearedNow = 0;
-    
+
     // Thuật toán 2 con trỏ: Duyệt từ dưới lên
-    int write_row = H - 2; 
+    int write_row = H - 2;
 
     for (int read_row = H - 2; read_row >= 0; read_row--) {
         // Kiểm tra hàng đã đầy chưa
         bool isFull = true;
-        for (int j = 1; j < W - 1; j++) { 
+        for (int j = 1; j < W - 1; j++) {
             if (board[read_row][j] == ' ') {
                 isFull = false;
                 break;
@@ -156,7 +156,7 @@ void removeLine() {
                     board[write_row][j] = board[read_row][j];
                 }
             }
-            write_row--; 
+            write_row--;
         }
     }
 
@@ -171,16 +171,16 @@ void removeLine() {
     // Cập nhật điểm số
     if (linesClearedNow > 0) {
         linesClearedTotal += linesClearedNow;
-        
+
         int pointsEarned = 0;
         switch(linesClearedNow) {
             case 1: pointsEarned = 100; break;
             case 2: pointsEarned = 300; break;
             case 3: pointsEarned = 500; break;
-            case 4: pointsEarned = 800; break; 
+            case 4: pointsEarned = 800; break;
             default: pointsEarned = linesClearedNow * 200; break;
         }
-        score += pointsEarned * currentLevel; 
+        score += pointsEarned * currentLevel;
 
         int newLevel = (linesClearedTotal / 5) + 1;
         if (newLevel > currentLevel) {
@@ -188,10 +188,12 @@ void removeLine() {
             isLevelUp = true;
             levelUpTimer = 15;
         }
-        
-       
+
+        // Chỉ vẽ lại màn hình 1 lần sau khi cập nhật toàn bộ mảng xong
+        // Loại bỏ Sleep ở đây để game không bị khựng lại
     }
 }
+// ----------------------------------
 
 int main()
 {
