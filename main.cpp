@@ -80,6 +80,7 @@ int nextBlock = 1;
 int score = 0;
 int highScore = 0;
 int level = 1;
+int linesCleared = 0;
 
 void gotoxy(int x, int y){
 
@@ -213,95 +214,146 @@ void rotateBlock() {
 void draw();
 
 void removeLine(){
+    int linesThisTurn = 0;
+    bool fullRows[H] = {false};
 
-    int j;
-
+   
     for (int i = H-2 ; i > 0 ; i--){
-
+        int j;
         for (j = 2 ; j < GAME_W-2 ; j++){
-
-            if (board[i][j] == ' ')
-                break;
+            if (board[i][j] == ' ') break;
         }
-
         if (j == GAME_W-2){
-            for (int blink = 0 ; blink < 3 ; blink++){
+            fullRows[i] = true;
+            linesThisTurn++;
+        }
+    }
 
-                for (int j = 2 ; j < GAME_W-2 ; j++)
-                    board[i][j] = '#';
+    if (linesThisTurn == 0) return;
 
-                draw();
-                Sleep(100);
-
-                for (int j = 2 ; j < GAME_W-2 ; j++)
-                    board[i][j] = ' ';
-
-                draw();
-                Sleep(100);
+    
+    for (int blink = 0 ; blink < 3 ; blink++){
+        for (int i = 1; i < H-1; i++) {
+            if (fullRows[i]) {
+                for (int j = 2 ; j < GAME_W-2 ; j++) board[i][j] = '#';
             }
+        }
+        draw();
+        Sleep(100);
 
-            score += 100;
-
-            if (score > highScore)
-                highScore = score;
-
-            if (score % 500 == 0)
-                level++;
-
-            for (int ii = i ; ii > 0 ; ii--){
-
-                for (int j = 2 ; j < GAME_W-2 ; j++)
-                    board[ii][j] = board[ii-1][j];
+        for (int i = 1; i < H-1; i++) {
+            if (fullRows[i]) {
+                for (int j = 2 ; j < GAME_W-2 ; j++) board[i][j] = ' ';
             }
+        }
+        draw();
+        Sleep(100);
+    }
 
-            i++;
+    
+    int writeRow = H - 2;
+    for (int readRow = H - 2; readRow > 0; readRow--) {
+        if (!fullRows[readRow]) {
+            for (int j = 2; j < GAME_W - 2; j++) {
+                board[writeRow][j] = board[readRow][j];
+            }
+            writeRow--;
+        }
+    }
+    for (; writeRow > 0; writeRow--) {
+        for (int j = 2; j < GAME_W - 2; j++) {
+            board[writeRow][j] = ' ';
+        }
+    }
+
+  
+    int points = 0;
+    if(linesThisTurn == 1) points = 100;
+    else if(linesThisTurn == 2) points = 300;
+    else if(linesThisTurn == 3) points = 500;
+    else if(linesThisTurn >= 4) points = 800;
+
+    int oldLevel = level;
+    score += points;
+    linesCleared += linesThisTurn;
+
+    if (score > highScore) highScore = score;
+
+    level = (score / 500) + 1;
+
+   
+    if (level > oldLevel) {
+        int notiX = OFFSET_X + GAME_W + 5;
+        int notiY = OFFSET_Y + 20;
+        for(int blink = 0; blink < 3; blink++) {
+            gotoxy(notiX, notiY);     cout << "***************";
+            gotoxy(notiX, notiY + 1); cout << "*  LEVEL UP!  *";
+            gotoxy(notiX, notiY + 2); cout << "***************";
+            Sleep(200);
+
+            gotoxy(notiX, notiY);     cout << "               ";
+            gotoxy(notiX, notiY + 1); cout << "               ";
+            gotoxy(notiX, notiY + 2); cout << "               ";
+            Sleep(200);
         }
     }
 }
 
 void drawNextBlock(){
+    int infoX = OFFSET_X + GAME_W + 2;
+    int infoY = OFFSET_Y + 11; 
 
-    int startX = OFFSET_X + GAME_W + 4;
-    int startY = OFFSET_Y + 14;
+    gotoxy(infoX, infoY);     cout << "╔══════════════════════╗";
+    gotoxy(infoX, infoY + 1); cout << "║      NEXT BLOCK      ║";
+    gotoxy(infoX, infoY + 2); cout << "╠══════════════════════╣";
 
-    for (int i = 0 ; i < 6 ; i++){
-
-        gotoxy(startX, startY - 2 + i);
-        cout << "            ";
+    for (int i = 0; i < 4; i++) {
+        gotoxy(infoX, infoY + 3 + i);
+        cout << "║                      ║"; 
     }
+    gotoxy(infoX, infoY + 7); cout << "╚══════════════════════╝";
 
-    gotoxy(startX, startY - 2);
-    cout << "NEXT BLOCK";
+    // Căn giữa khối Next Block vào trong khung
+    int blockStartX = infoX + 10;
+    int blockStartY = infoY + 3;
 
     for (int i = 0 ; i < 4 ; i++){
-
-        gotoxy(startX, startY + i);
-
+        gotoxy(blockStartX, blockStartY + i);
         for (int j = 0 ; j < 4 ; j++){
-                cout << blocks[nextBlock][i][j];
+            cout << blocks[nextBlock][i][j];
         }
     }
 }
 
 void drawInfo(){
+    int infoX = OFFSET_X + GAME_W + 2;
+    int infoY = OFFSET_Y;
 
-    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y);
-    cout << "╔══════════╗";
+    // Vẽ toàn bộ bảng điều khiển nguyên khối
+    gotoxy(infoX, infoY);     cout << "╔══════════════════════╗";
+    gotoxy(infoX, infoY + 1); cout << "║        TETRIS        ║";
+    gotoxy(infoX, infoY + 2); cout << "╠══════════════════════╣";
+    gotoxy(infoX, infoY + 3); cout << "║ SCORE      :         ║";
+    gotoxy(infoX, infoY + 4); cout << "╠══════════════════════╣";
+    gotoxy(infoX, infoY + 5); cout << "║ HIGH SCORE :         ║";
+    gotoxy(infoX, infoY + 6); cout << "╠══════════════════════╣";
+    gotoxy(infoX, infoY + 7); cout << "║ LEVEL      :         ║";
+    gotoxy(infoX, infoY + 8); cout << "╠══════════════════════╣";
+    gotoxy(infoX, infoY + 9); cout << "║ LINES      :         ║";
+    gotoxy(infoX, infoY + 10);cout << "╚══════════════════════╝";
 
-    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 1);
-    cout << "║  TETRIS  ║";
+    
+    gotoxy(infoX + 15, infoY + 3); cout << "       ";
+    gotoxy(infoX + 15, infoY + 3); cout << score;
 
-    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 2);
-    cout << "╚══════════╝";
+    gotoxy(infoX + 15, infoY + 5); cout << "       ";
+    gotoxy(infoX + 15, infoY + 5); cout << highScore;
 
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 5);
-    cout << "SCORE : " << score;
+    gotoxy(infoX + 15, infoY + 7); cout << "       ";
+    gotoxy(infoX + 15, infoY + 7); cout << level;
 
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 7);
-    cout << "HIGH SCORE  : " << highScore;
-
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 9);
-    cout << "LEVEL : " << level;
+    gotoxy(infoX + 15, infoY + 9); cout << "       ";
+    gotoxy(infoX + 15, infoY + 9); cout << linesCleared;
 
     drawNextBlock();
 }
