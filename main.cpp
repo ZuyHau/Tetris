@@ -403,7 +403,7 @@ int main(){
 
         block2Board();
         draw();
-        Sleep(max(50, 200 - level * 10));
+        Sleep(max(50, 200 - level * 5));
     }
     return 0;
 }
