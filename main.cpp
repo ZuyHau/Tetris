@@ -76,8 +76,9 @@ bool canMove(int dx, int dy){
             }
     return true;
 }
-void removeLine(){
+int removeLine(){
     int j;
+    int linesCleared = 0;
     for (int i = H-2; i >0 ; i-- ){
         for (j = 0; j < W-1 ; j++)
             if (board[i][j] == ' ') break;
@@ -85,10 +86,12 @@ void removeLine(){
             for (int ii = i; ii >0 ; ii-- )
                 for (int j = 0; j < W-1 ; j++ ) board[ii][j] = board[ii-1][j];
             i++;
+            linesCleared++;
             draw();
             Sleep(200);
         }
     }
+    return linesCleared;
 }
 
 
@@ -98,6 +101,7 @@ int main()
     b = rand() % 7;
     system("cls");
     initBoard();
+    int speedDelay = 200;
     while (1){
         boardDelBlock();
         if (_kbhit()){
@@ -111,12 +115,16 @@ int main()
         if (canMove(0,1)) y++;
         else {
             block2Board();
-            removeLine();
+            int lines = removeLine();
+            if(lines > 0){
+                speedDelay = speedDelay - (lines * 15);
+                if(speedDelay < 50) speedDelay = 50;
+            }
             x = 5; y = 0; b = rand() % 7;
         }
         block2Board();
         draw();
-        Sleep(200);
+        Sleep(speedDelay);
     }
     return 0;
 }
