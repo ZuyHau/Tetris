@@ -210,6 +210,18 @@ void rotateBlock() {
                 blocks[b][i][j] = rotated[i][j];
     }
 }
+
+void hideCursor()
+{
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    CONSOLE_CURSOR_INFO info;
+
+    info.dwSize = 100;
+    info.bVisible = FALSE;
+
+    SetConsoleCursorInfo(h, &info);
+}
 void draw();
 
 void removeLine(){
@@ -369,6 +381,7 @@ int main(){
     system("chcp 65001 > nul");
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+    hideCursor();
     srand(time(0));
 
     drawMenu();
@@ -378,6 +391,7 @@ int main(){
     initBoard();
     b = rand() % 8;
     nextBlock = rand() % 8;
+    DWORD lastFall = GetTickCount();
 
     while (1){
         boardDelBlock();
@@ -390,20 +404,24 @@ int main(){
             if (c == 'q') break;
         }
 
-        if (canMove(0,1)) y++;
-        else {
-            block2Board();
-            removeLine();
-            x = (GAME_W - 2) / 2;
-            y = 0;
-            b = nextBlock;
-            nextBlock = rand() % 8;
-            if (!canMove(0,0)) break; 
+        int speed = max(50, 200 - level * 10);
+        if (GetTickCount() - lastFall >= speed) {
+            if (canMove(0, 1)) y++;
+            else {
+                block2Board();
+                removeLine();
+                x = (GAME_W - 2) / 2;
+                y = 0;
+                b = nextBlock;
+                nextBlock = rand() % 8;
+                if (!canMove(0,0)) break; 
+            }
+            lastFall = GetTickCount();
         }
 
         block2Board();
         draw();
-        Sleep(max(50, 200 - level * 10));
+        Sleep(1);
     }
     return 0;
 }
