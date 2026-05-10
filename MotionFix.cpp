@@ -1,13 +1,14 @@
 #include <iostream>
 #include <conio.h>
 #include <windows.h>
+#include <ctime>
 using namespace std;
 
-#define H 30
-#define GAME_W 60
+#define H 20
+#define GAME_W 40
 
-int OFFSET_X;
-int OFFSET_Y;
+#define OFFSET_X 20
+#define OFFSET_Y 2
 
 char board[H][GAME_W] = {};
 
@@ -23,7 +24,7 @@ char blocks[][4][4] = {
     {
         {' ',' ',' ',' '},
         {'I','I','I','I'},
-        {' ',' ',' ',' '},
+        {' ',' ',' ',' '},      
         {' ',' ',' ',' '}
     },
 
@@ -167,6 +168,60 @@ bool canMove(int dx, int dy){
     return true;
 }
 
+void rotateBlock() {
+    boardDelBlock(); 
+    char rotated[4][4]; 
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            rotated[j][3 - i] = blocks[b][i][j];
+
+    
+    int kick[] = { 0, 1, -1, 2, -2 };
+    int newX = x;
+    bool canRotate = false;
+
+    for (int k = 0; k < 5 && !canRotate; k++) {
+        bool ok = true;
+        int testX = x + kick[k];
+
+        for (int i = 0; i < 4 && ok; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (rotated[i][j] != ' ') {
+                    int tx = testX + j;
+                    int ty = y + i;
+                    
+                    if (tx < 2 || tx >= GAME_W - 2 || ty >= H - 1 || board[ty][tx] != ' ') {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (ok) {
+            canRotate = true;
+            newX = testX;
+        }
+    }
+
+    if (canRotate) {
+        x = newX;
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                blocks[b][i][j] = rotated[i][j];
+    }
+}
+
+void hideCursor()
+{
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    CONSOLE_CURSOR_INFO info;
+
+    info.dwSize = 100;
+    info.bVisible = FALSE;
+
+    SetConsoleCursorInfo(h, &info);
+}
 void draw();
 
 void removeLine(){
@@ -271,11 +326,8 @@ void draw(){
 
         for (int j = 0 ; j < GAME_W ; j++){
 
-            if (board[i][j] == ' ') {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+            if (board[i][j] == ' ')
                 cout << '.';
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
-            }
             else
                 cout << board[i][j];
         }
@@ -289,169 +341,87 @@ void drawMenu(){
     system("cls");
     system("color 0A");
 
-    string logo[] = {
+    cout << R"(
 
-"        ,----,                 ,----,",
-"      ,/   .`|               ,/   .`|",
-"    ,`   .'  :   ,---,.    ,`   .'  :,-.----.     ,---,  .--.--.",
-"  ;    ;     / ,'  .' |  ;    ;     /\\    /  \\ ,`--.' | /  /    '.",
-".'___,/    ,',---.'   |.'___,/    ,' ;   :    \\|   :  :|  :  /`. /",
-"|    :     | |   |   .'|    :     |  |   | .\\ ::   |  ';  |  |--`",
-";    |.';  ; :   :  |-,;    |.';  ;  .   : |: ||   :  ||  :  ;_",
-"`----'  |  | :   |  ;/|`----'  |  |  |   |  \\ :'   '  ; \\  \\    `.",
-"    '   :  ; |   :   .'    '   :  ;  |   : .  /|   |  |  `----.   \\",
-"    |   |  ' |   |  |-,    |   |  '  ;   | |  \\'   :  ;  __ \\  \\  |",
-"    '   :  | '   :  ;/|    '   :  |  |   | ;\\  \\   |  ' /  /`--'  /",
-"    ;   |.'  |   |    \\    ;   |.'   :   ' | \\.'   :  |'--'.     /",
-"    '---'    |   :   .'    '---'     :   : :-' ;   |.'   `--'---'",
-"             |   | ,'                |   |.'   '---'",
-"             `----'                  `---'"
-    };
+        ,----,                 ,----,
+      ,/   .`|               ,/   .`|
+    ,`   .'  :   ,---,.    ,`   .'  :,-.----.     ,---,  .--.--.
+  ;    ;     / ,'  .' |  ;    ;     /\    /  \ ,`--.' | /  /    '.
+.'___,/    ,',---.'   |.'___,/    ,' ;   :    \|   :  :|  :  /`. /
+|    :     | |   |   .'|    :     |  |   | .\ ::   |  ';  |  |--`
+;    |.';  ; :   :  |-,;    |.';  ;  .   : |: ||   :  ||  :  ;_
+`----'  |  | :   |  ;/|`----'  |  |  |   |  \ :'   '  ; \  \    `.
+    '   :  ; |   :   .'    '   :  ;  |   : .  /|   |  |  `----.   \
+    |   |  ' |   |  |-,    |   |  '  ;   | |  \'   :  ;  __ \  \  |
+    '   :  | '   :  ;/|    '   :  |  |   | ;\  \   |  ' /  /`--'  /
+    ;   |.'  |   |    \    ;   |.'   :   ' | \.'   :  |'--'.     /
+    '---'    |   :   .'    '---'     :   : :-' ;   |.'   `--'---'
+             |   | ,'                |   |.'   '---'
+             `----'                  `---'
 
-    int longest = 0;
+)";
 
-    for (int i = 0 ; i < 15 ; i++){
+    cout << "\n";
 
-        if (logo[i].length() > longest)
-            longest = logo[i].length();
-    }
 
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    cout << "                 >> START GAME\n";
+    cout << "                    HIGH SCORE : " << highScore << "\n";
+    cout << "                    PRESS ENTER\n\n";
 
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-
-    int consoleWidth =
-        csbi.srWindow.Right - csbi.srWindow.Left + 1;
-
-    int startX = (consoleWidth / 2) - 30;
-
-    int y = 2;
-
-    for (int i = 0 ; i < 15 ; i++){
-
-        gotoxy(startX - 7, y++);
-        cout << logo[i];
-    }
-
-    gotoxy(startX + 17, y + 2);
-    cout << ">> START GAME";
-
-    gotoxy(startX + 20, y + 4);
-    cout << "HIGH SCORE : " << highScore;
-
-    gotoxy(startX + 20, y + 6);
-    cout << "PRESS ENTER";
-
-    gotoxy(startX + 10, y + 10);
-    cout << "╔════════ CONTROLS ═══════════╗";
-
-    gotoxy(startX + 10, y + 11);
-    cout << "║  [A] DI CHUYEN QUA TRAI     ║";
-
-    gotoxy(startX + 10, y + 12);
-    cout << "║  [D] DI CHUYEN QUA PHAI     ║";
-
-    gotoxy(startX + 10, y + 13);
-    cout << "║  [X] DI CHUYEN XUONG DUOI   ║";
-
-    gotoxy(startX + 10, y + 14);
-    cout << "║  [Q] THOAT GAME             ║";
-
-    gotoxy(startX + 10, y + 15);
-    cout << "╚═════════════════════════════╝";
-}
-
-void centerGame(){
-
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-
-    GetConsoleScreenBufferInfo(
-        GetStdHandle(STD_OUTPUT_HANDLE),
-        &csbi
-    );
-
-    int consoleWidth =
-        csbi.srWindow.Right - csbi.srWindow.Left + 1;
-
-    int consoleHeight =
-        csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-
-    int totalWidth = GAME_W + 30;
-
-    OFFSET_X = (consoleWidth - totalWidth) / 2;
-
-    OFFSET_Y = (consoleHeight - H) / 2;
+    cout << "          ╔════════ CONTROLS ═══════════╗\n";
+    cout << "          ║  [A] DI CHUYEN QUA TRAI     ║\n";
+    cout << "          ║  [D] DI CHUYEN QUA PHAI     ║\n";
+    cout << "          ║  [X] DI CHUYEN XUONG DUOI   ║\n";
+    cout << "          ║  [W] XOAY                   ║\n";
+    cout << "          ║  [Q] THOAT GAME             ║\n";
+    cout << "          ╚═════════════════════════════╝\n";
 }
 
 int main(){
-
     system("chcp 65001 > nul");
-
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-
-    system("mode con cols=140 lines=40");
-    system("cls");
-    centerGame();
-    system("color 0A");
-
+    hideCursor();
     srand(time(0));
 
     drawMenu();
-
     while (getch() != 13);
-
     system("cls");
 
+    initBoard();
     b = rand() % 8;
     nextBlock = rand() % 8;
-
-    initBoard();
+    DWORD lastFall = GetTickCount();
 
     while (1){
-
         boardDelBlock();
-
         if (kbhit()){
-
             char c = getch();
-
-            if (c == 'a' && canMove(-1,0))
-                x--;
-
-            if (c == 'd' && canMove(1,0))
-                x++;
-
-            if (c == 'x' && canMove(0,1))
-                y++;
-
-            if (c == 'q')
-                break;
+            if (c == 'a' && canMove(-1,0)) x--;
+            if (c == 'd' && canMove(1,0)) x++;
+            if (c == 'x' && canMove(0,1)) y++;
+            if (c == 'w') rotateBlock(); 
+            if (c == 'q') break;
         }
 
-        if (canMove(0,1))
-            y++;
-
-        else{
-
-            block2Board();
-
-            removeLine();
-
-            x = (GAME_W - 2) / 2;
-            y = 0;
-
-            b = nextBlock;
-            nextBlock = rand() % 8;
+        int speed = max(50, 200 - level * 10);
+        if (GetTickCount() - lastFall >= speed) {
+            if (canMove(0, 1)) y++;
+            else {
+                block2Board();
+                removeLine();
+                x = (GAME_W - 2) / 2;
+                y = 0;
+                b = nextBlock;
+                nextBlock = rand() % 8;
+                if (!canMove(0, 0))break;
+            }
+            lastFall = GetTickCount();
         }
 
         block2Board();
-
         draw();
-
-        Sleep(max(50, 200 - level * 10));
-main
+        Sleep(1);
     }
-
     return 0;
 }
