@@ -450,6 +450,7 @@ int main(){
         draw();
 
         Sleep(max(50, 200 - level * 10));
+main
     }
 
     return 0;
