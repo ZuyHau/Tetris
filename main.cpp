@@ -1,6 +1,8 @@
 #include <iostream>
 #include <conio.h>
 #include <windows.h>
+#include <ctime>
+
 using namespace std;
 
 #define H 30
@@ -72,7 +74,6 @@ char blocks[][4][4] = {
 
 int x = (GAME_W - 2) / 2;
 int y = 0;
-
 int b = 0;
 int nextBlock = 1;
 
@@ -82,7 +83,6 @@ int level = 1;
 int linesCleared = 0;
 
 void gotoxy(int x, int y){
-
     COORD c = {SHORT(x), SHORT(y)};
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), c);
 }
@@ -96,7 +96,6 @@ void boardDelBlock(){
 }
 
 void block2Board(){
-
     for (int i = 0 ; i < 4 ; i++)
         for (int j = 0 ; j < 4 ; j++)
             if (blocks[b][i][j] != ' ')
@@ -104,41 +103,28 @@ void block2Board(){
 }
 
 void initBoard(){
-
     for (int i = 0 ; i < H ; i++){
-
         for (int j = 0 ; j < GAME_W ; j++){
-
             if (i == H-1){
-
                 if (j == 0)
                     board[i][j] = '<';
-
                 else if (j == 1)
                     board[i][j] = '!';
-
                 else if (j == GAME_W-2)
                     board[i][j] = '!';
-
                 else if (j == GAME_W-1)
                     board[i][j] = '>';
-
                 else
                     board[i][j] = '=';
             }
-
             else if (j == 0)
                 board[i][j] = '<';
-
             else if (j == 1)
                 board[i][j] = '!';
-
             else if (j == GAME_W-2)
                 board[i][j] = '!';
-
             else if (j == GAME_W-1)
                 board[i][j] = '>';
-
             else
                 board[i][j] = ' ';
         }
@@ -146,19 +132,13 @@ void initBoard(){
 }
 
 bool canMove(int dx, int dy){
-
     for (int i = 0 ; i < 4 ; i++){
-
         for (int j = 0 ; j < 4 ; j++){
-
             if (blocks[b][i][j] != ' '){
-
                 int tx = x + j + dx;
                 int ty = y + i + dy;
-
                 if (tx < 2 || tx >= GAME_W-2 || ty >= H-1)
                     return false;
-
                 if (board[ty][tx] != ' ')
                     return false;
             }
@@ -168,12 +148,63 @@ bool canMove(int dx, int dy){
     return true;
 }
 
+void rotateBlock() {
+    boardDelBlock(); 
+    char rotated[4][4]; 
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            rotated[j][3 - i] = blocks[b][i][j];
+
+    
+    int kick[] = { 0, 1, -1, 2, -2 };
+    int newX = x;
+    bool canRotate = false;
+
+    for (int k = 0; k < 5 && !canRotate; k++) {
+        bool ok = true;
+        int testX = x + kick[k];
+
+        for (int i = 0; i < 4 && ok; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (rotated[i][j] != ' ') {
+                    int tx = testX + j;
+                    int ty = y + i;
+                    
+                    if (tx < 2 || tx >= GAME_W - 2 || ty >= H - 1 || board[ty][tx] != ' ') {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+        }
+        if (ok) {
+            canRotate = true;
+            newX = testX;
+        }
+    }
+    if (canRotate) {
+        x = newX;
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                blocks[b][i][j] = rotated[i][j];
+    }
+}
+void hideCursor()
+{
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    CONSOLE_CURSOR_INFO info;
+
+    info.dwSize = 100;
+    info.bVisible = FALSE;
+
+    SetConsoleCursorInfo(h, &info);
+}
 void draw();
 
 void removeLine(){
     int linesThisTurn = 0;
     bool fullRows[H] = {false};
-
    
     for (int i = H-2 ; i > 0 ; i--){
         int j;
@@ -185,9 +216,7 @@ void removeLine(){
             linesThisTurn++;
         }
     }
-
     if (linesThisTurn == 0) return;
-
     
     for (int blink = 0 ; blink < 3 ; blink++){
         for (int i = 1; i < H-1; i++) {
@@ -206,8 +235,7 @@ void removeLine(){
         draw();
         Sleep(100);
     }
-
-    
+  
     int writeRow = H - 2;
     for (int readRow = H - 2; readRow > 0; readRow--) {
         if (!fullRows[readRow]) {
@@ -222,7 +250,6 @@ void removeLine(){
             board[writeRow][j] = ' ';
         }
     }
-
   
     int points = 0;
     if(linesThisTurn == 1) points = 100;
@@ -233,12 +260,10 @@ void removeLine(){
     int oldLevel = level;
     score += points;
     linesCleared += linesThisTurn;
-
+  
     if (score > highScore) highScore = score;
-
     level = (score / 500) + 1;
-
-   
+  
     if (level > oldLevel) {
         int notiX = OFFSET_X + GAME_W + 5;
         int notiY = OFFSET_Y + 20;
@@ -441,6 +466,7 @@ int main(){
 
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+    hideCursor();
 
     system("mode con cols=140 lines=40");
     system("cls");
@@ -457,6 +483,7 @@ int main(){
 
     b = rand() % 8;
     nextBlock = rand() % 8;
+    DWORD lastFall = GetTickCount();
 
     initBoard();
 
@@ -465,44 +492,35 @@ int main(){
         boardDelBlock();
 
         if (kbhit()){
-
             char c = getch();
-
             if (c == 'a' && canMove(-1,0))
                 x--;
-
             if (c == 'd' && canMove(1,0))
                 x++;
-
             if (c == 'x' && canMove(0,1))
                 y++;
-
             if (c == 'q')
                 break;
         }
 
-        if (canMove(0,1))
-            y++;
-
-        else{
-
-            block2Board();
-
-            removeLine();
-
-            x = (GAME_W - 2) / 2;
-            y = 0;
-
-            b = nextBlock;
-            nextBlock = rand() % 8;
+        int speed = max(50, 200 - level * 10);
+        if (GetTickCount() - lastFall >= speed) {
+            if (canMove(0, 1)) y++;
+            else {
+                block2Board();
+                removeLine();
+                x = (GAME_W - 2) / 2;
+                y = 0;
+                b = nextBlock;
+                nextBlock = rand() % 8;
+                if (!canMove(0,0)) break; 
+            }
+            lastFall = GetTickCount();
         }
 
         block2Board();
-
         draw();
-
-        Sleep(max(50, 200 - level * 10));
-main
+        Sleep(1);
     }
 
     return 0;
