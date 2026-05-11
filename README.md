@@ -6,9 +6,8 @@ Nguyễn Lê Duy Hậu - 25520518 - Trưởng nhóm (Leader).
 
 Cao Minh Đức - 25520320 - Thành viên (Developer).
 
-
-
 Nguyễn Tấn Khải - 25520771 - Thành viên (Developer).
-25521446 - Thành viên (Developer).
+
+Trần Hoàng Phúc - 25521446 - Thành viên (Developer).
 
 Nguyễn Thành Tài - 25521623 - Thành viên (Developer).
