@@ -6,7 +6,7 @@
 using namespace std;
 
 #define H 30
-#define GAME_W 60
+#define GAME_W 30
 
 int OFFSET_X;
 int OFFSET_Y;
@@ -385,7 +385,7 @@ void drawMenu(){
 "             `----'                  `---'"
     };
 
-    int longest = 0;
+    size_t longest = 0;
 
     for (int i = 0 ; i < 15 ; i++){
 
@@ -432,9 +432,12 @@ void drawMenu(){
     cout << "║  [X] DI CHUYEN XUONG DUOI   ║";
 
     gotoxy(startX + 10, y + 14);
-    cout << "║  [Q] THOAT GAME             ║";
+    cout << "║  [W] XOAY                   ║";
 
     gotoxy(startX + 10, y + 15);
+    cout << "║  [Q] THOAT GAME             ║";
+
+    gotoxy(startX + 10, y + 16);
     cout << "╚═════════════════════════════╝";
 }
 
@@ -486,24 +489,36 @@ int main(){
     DWORD lastFall = GetTickCount();
 
     initBoard();
-
+////
+DWORD lastInput = GetTickCount();
+DWORD inputDelay = 50;
+////
     while (1){
 
         boardDelBlock();
 
-        if (kbhit()){
-            char c = getch();
-            if (c == 'a' && canMove(-1,0))
-                x--;
-            if (c == 'd' && canMove(1,0))
-                x++;
-            if (c == 'x' && canMove(0,1))
-                y++;
-            if (c == 'q')
-                break;
+        if (GetTickCount() - lastInput >= inputDelay) {
+        if (GetAsyncKeyState('A') & 0x8000) {
+            if (canMove(-1, 0)) x--;
+            lastInput = GetTickCount();
         }
+        if (GetAsyncKeyState('D') & 0x8000) {
+            if (canMove(1, 0)) x++;
+            lastInput = GetTickCount();
+        }
+        if (GetAsyncKeyState('X') & 0x8000) {
+            if (canMove(0, 1)) y++;
+            lastInput = GetTickCount();
+        }
+        if (GetAsyncKeyState('W') & 0x8000) {
+            rotateBlock();
+            lastInput = GetTickCount();
+            Sleep(150); 
+        }
+        if (GetAsyncKeyState('Q') & 0x8000) break;
+    }
 
-        int speed = max(50, 200 - level * 10);
+        DWORD speed = (DWORD)max(50, 200 - level * 10);
         if (GetTickCount() - lastFall >= speed) {
             if (canMove(0, 1)) y++;
             else {
