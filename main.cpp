@@ -2,6 +2,8 @@
 #include <conio.h>
 #include <windows.h>
 #include <ctime>
+#include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -72,15 +74,81 @@ char blocks[][4][4] = {
     }
 };
 
-int x = (GAME_W - 2) / 2;
-int y = 0;
-int b = 0;
-int nextBlock = 1;
+class Piece {
+public:
+    int x;
+    int y;
+    int color;
+    char shape[4][4];
+
+    Piece(int startX, int startY, int c, char s[4][4]) {
+        x = startX;
+        y = startY;
+        color = c;
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = s[i][j];
+            }
+        }
+    }
+
+    virtual void rotate() = 0;
+
+    virtual ~Piece() {}
+};
+
+class NormalPiece : public Piece {
+public:
+    NormalPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {}
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+class OPiece : public Piece {
+public:
+    OPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {}
+
+    void rotate() override {
+
+    }
+};
+
+Piece* currentPiece = nullptr;
+Piece* nextPiece = nullptr;
 
 int score = 0;
 int highScore = 0;
 int level = 1;
 int linesCleared = 0;
+
+Piece* createPiece() {
+    int type = rand() % 8;
+    int startX = (GAME_W - 2) / 2;
+    int startY = 0;
+
+    if (type == 2) {
+        return new OPiece(startX, startY, type, blockTemplates[type]);
+    }
+
+    return new NormalPiece(startX, startY, type, blockTemplates[type]);
+}
 
 void gotoxy(int x, int y){
     COORD c = {SHORT(x), SHORT(y)};
@@ -88,18 +156,23 @@ void gotoxy(int x, int y){
 }
 
 void boardDelBlock(){
-
-    for (int i = 0 ; i < 4 ; i++)
-        for (int j = 0 ; j < 4 ; j++)
-            if (blocks[b][i][j] != ' ')
-                board[y+i][x+j] = ' ';
+    for (int i = 0 ; i < 4 ; i++) {
+        for (int j = 0 ; j < 4 ; j++) {
+            if (currentPiece->shape[i][j] != ' ') {
+                board[currentPiece->y + i][currentPiece->x + j] = ' ';
+            }
+        }
+    }
 }
 
 void block2Board(){
-    for (int i = 0 ; i < 4 ; i++)
-        for (int j = 0 ; j < 4 ; j++)
-            if (blocks[b][i][j] != ' ')
-                board[y+i][x+j] = blocks[b][i][j];
+    for (int i = 0 ; i < 4 ; i++) {
+        for (int j = 0 ; j < 4 ; j++) {
+            if (currentPiece->shape[i][j] != ' ') {
+                board[currentPiece->y + i][currentPiece->x + j] = currentPiece->shape[i][j];
+            }
+        }
+    }
 }
 
 void initBoard(){
@@ -134,11 +207,13 @@ void initBoard(){
 bool canMove(int dx, int dy){
     for (int i = 0 ; i < 4 ; i++){
         for (int j = 0 ; j < 4 ; j++){
-            if (blocks[b][i][j] != ' '){
-                int tx = x + j + dx;
-                int ty = y + i + dy;
+            if (currentPiece->shape[i][j] != ' '){
+                int tx = currentPiece->x + j + dx;
+                int ty = currentPiece->y + i + dy;
+
                 if (tx < 2 || tx >= GAME_W-2 || ty >= H-1)
                     return false;
+
                 if (board[ty][tx] != ' ')
                     return false;
             }
@@ -149,27 +224,32 @@ bool canMove(int dx, int dy){
 }
 
 void rotateBlock() {
-    boardDelBlock(); 
-    char rotated[4][4]; 
-    for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-            rotated[j][3 - i] = blocks[b][i][j];
+    boardDelBlock();
 
-    
+    char oldShape[4][4];
+    int oldX = currentPiece->x;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            oldShape[i][j] = currentPiece->shape[i][j];
+        }
+    }
+
+    currentPiece->rotate();
+
     int kick[] = { 0, 1, -1, 2, -2 };
-    int newX = x;
     bool canRotate = false;
 
     for (int k = 0; k < 5 && !canRotate; k++) {
         bool ok = true;
-        int testX = x + kick[k];
+        int testX = oldX + kick[k];
 
         for (int i = 0; i < 4 && ok; i++) {
             for (int j = 0; j < 4; j++) {
-                if (rotated[i][j] != ' ') {
+                if (currentPiece->shape[i][j] != ' ') {
                     int tx = testX + j;
-                    int ty = y + i;
-                    
+                    int ty = currentPiece->y + i;
+
                     if (tx < 2 || tx >= GAME_W - 2 || ty >= H - 1 || board[ty][tx] != ' ') {
                         ok = false;
                         break;
@@ -177,18 +257,24 @@ void rotateBlock() {
                 }
             }
         }
+
         if (ok) {
             canRotate = true;
-            newX = testX;
+            currentPiece->x = testX;
         }
     }
-    if (canRotate) {
-        x = newX;
-        for (int i = 0; i < 4; i++)
-            for (int j = 0; j < 4; j++)
-                blocks[b][i][j] = rotated[i][j];
+
+    if (!canRotate) {
+        currentPiece->x = oldX;
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                currentPiece->shape[i][j] = oldShape[i][j];
+            }
+        }
     }
 }
+
 void hideCursor()
 {
     HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -200,12 +286,13 @@ void hideCursor()
 
     SetConsoleCursorInfo(h, &info);
 }
+
 void draw();
 
 void removeLine(){
     int linesThisTurn = 0;
     bool fullRows[H] = {false};
-   
+
     for (int i = H-2 ; i > 0 ; i--){
         int j;
         for (j = 2 ; j < GAME_W-2 ; j++){
@@ -216,14 +303,16 @@ void removeLine(){
             linesThisTurn++;
         }
     }
+
     if (linesThisTurn == 0) return;
-    
+
     for (int blink = 0 ; blink < 3 ; blink++){
         for (int i = 1; i < H-1; i++) {
             if (fullRows[i]) {
                 for (int j = 2 ; j < GAME_W-2 ; j++) board[i][j] = '#';
             }
         }
+
         draw();
         Sleep(100);
 
@@ -232,11 +321,13 @@ void removeLine(){
                 for (int j = 2 ; j < GAME_W-2 ; j++) board[i][j] = ' ';
             }
         }
+
         draw();
         Sleep(100);
     }
-  
+
     int writeRow = H - 2;
+
     for (int readRow = H - 2; readRow > 0; readRow--) {
         if (!fullRows[readRow]) {
             for (int j = 2; j < GAME_W - 2; j++) {
@@ -245,28 +336,33 @@ void removeLine(){
             writeRow--;
         }
     }
+
     for (; writeRow > 0; writeRow--) {
         for (int j = 2; j < GAME_W - 2; j++) {
             board[writeRow][j] = ' ';
         }
     }
-  
+
     int points = 0;
+
     if(linesThisTurn == 1) points = 100;
     else if(linesThisTurn == 2) points = 300;
     else if(linesThisTurn == 3) points = 500;
     else if(linesThisTurn >= 4) points = 800;
 
     int oldLevel = level;
+
     score += points;
     linesCleared += linesThisTurn;
-  
+
     if (score > highScore) highScore = score;
+
     level = (score / 500) + 1;
-  
+
     if (level > oldLevel) {
         int notiX = OFFSET_X + GAME_W + 5;
         int notiY = OFFSET_Y + 20;
+
         for(int blink = 0; blink < 3; blink++) {
             gotoxy(notiX, notiY);     cout << "***************";
             gotoxy(notiX, notiY + 1); cout << "*  LEVEL UP!  *";
@@ -283,7 +379,7 @@ void removeLine(){
 
 void drawNextBlock(){
     int infoX = OFFSET_X + GAME_W + 2;
-    int infoY = OFFSET_Y + 11; 
+    int infoY = OFFSET_Y + 11;
 
     gotoxy(infoX, infoY);     cout << "╔══════════════════════╗";
     gotoxy(infoX, infoY + 1); cout << "║      NEXT BLOCK      ║";
@@ -291,18 +387,18 @@ void drawNextBlock(){
 
     for (int i = 0; i < 4; i++) {
         gotoxy(infoX, infoY + 3 + i);
-        cout << "║                      ║"; 
+        cout << "║                      ║";
     }
+
     gotoxy(infoX, infoY + 7); cout << "╚══════════════════════╝";
 
-    // Căn giữa khối Next Block vào trong khung
     int blockStartX = infoX + 10;
     int blockStartY = infoY + 3;
 
     for (int i = 0 ; i < 4 ; i++){
         gotoxy(blockStartX, blockStartY + i);
         for (int j = 0 ; j < 4 ; j++){
-            cout << blocks[nextBlock][i][j];
+            cout << nextPiece->shape[i][j];
         }
     }
 }
@@ -311,7 +407,6 @@ void drawInfo(){
     int infoX = OFFSET_X + GAME_W + 2;
     int infoY = OFFSET_Y;
 
-    // Vẽ toàn bộ bảng điều khiển nguyên khối
     gotoxy(infoX, infoY);     cout << "╔══════════════════════╗";
     gotoxy(infoX, infoY + 1); cout << "║        TETRIS        ║";
     gotoxy(infoX, infoY + 2); cout << "╠══════════════════════╣";
@@ -324,7 +419,6 @@ void drawInfo(){
     gotoxy(infoX, infoY + 9); cout << "║ LINES      :         ║";
     gotoxy(infoX, infoY + 10);cout << "╚══════════════════════╝";
 
-    
     gotoxy(infoX + 15, infoY + 3); cout << "       ";
     gotoxy(infoX + 15, infoY + 3); cout << score;
 
@@ -341,20 +435,18 @@ void drawInfo(){
 }
 
 void draw(){
-
     for (int i = 0 ; i < H ; i++){
-
         gotoxy(OFFSET_X, OFFSET_Y + i);
 
         for (int j = 0 ; j < GAME_W ; j++){
-
             if (board[i][j] == ' ') {
                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
                 cout << '.';
                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
             }
-            else
+            else {
                 cout << board[i][j];
+            }
         }
     }
 
@@ -362,7 +454,6 @@ void draw(){
 }
 
 void drawMenu(){
-
     system("cls");
     system("color 0A");
 
@@ -388,7 +479,6 @@ void drawMenu(){
     size_t longest = 0;
 
     for (int i = 0 ; i < 15 ; i++){
-
         if (logo[i].length() > longest)
             longest = logo[i].length();
     }
@@ -405,7 +495,6 @@ void drawMenu(){
     int y = 2;
 
     for (int i = 0 ; i < 15 ; i++){
-
         gotoxy(startX - 7, y++);
         cout << logo[i];
     }
@@ -442,7 +531,6 @@ void drawMenu(){
 }
 
 void centerGame(){
-
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 
     GetConsoleScreenBufferInfo(
@@ -464,7 +552,6 @@ void centerGame(){
 }
 
 int main(){
-
     system("chcp 65001 > nul");
 
     SetConsoleOutputCP(CP_UTF8);
@@ -484,52 +571,61 @@ int main(){
 
     system("cls");
 
-    b = rand() % 8;
-    nextBlock = rand() % 8;
+    currentPiece = createPiece();
+    nextPiece = createPiece();
+
     DWORD lastFall = GetTickCount();
 
     initBoard();
-////
-DWORD lastInput = GetTickCount();
-DWORD inputDelay = 50;
-////
-    while (1){
 
+    DWORD lastInput = GetTickCount();
+    DWORD inputDelay = 50;
+
+    while (1){
         boardDelBlock();
 
         if (GetTickCount() - lastInput >= inputDelay) {
-        if (GetAsyncKeyState('A') & 0x8000) {
-            if (canMove(-1, 0)) x--;
-            lastInput = GetTickCount();
+            if (GetAsyncKeyState('A') & 0x8000) {
+                if (canMove(-1, 0)) currentPiece->x--;
+                lastInput = GetTickCount();
+            }
+
+            if (GetAsyncKeyState('D') & 0x8000) {
+                if (canMove(1, 0)) currentPiece->x++;
+                lastInput = GetTickCount();
+            }
+
+            if (GetAsyncKeyState('X') & 0x8000) {
+                if (canMove(0, 1)) currentPiece->y++;
+                lastInput = GetTickCount();
+            }
+
+            if (GetAsyncKeyState('W') & 0x8000) {
+                rotateBlock();
+                lastInput = GetTickCount();
+                Sleep(150);
+            }
+
+            if (GetAsyncKeyState('Q') & 0x8000) break;
         }
-        if (GetAsyncKeyState('D') & 0x8000) {
-            if (canMove(1, 0)) x++;
-            lastInput = GetTickCount();
-        }
-        if (GetAsyncKeyState('X') & 0x8000) {
-            if (canMove(0, 1)) y++;
-            lastInput = GetTickCount();
-        }
-        if (GetAsyncKeyState('W') & 0x8000) {
-            rotateBlock();
-            lastInput = GetTickCount();
-            Sleep(150); 
-        }
-        if (GetAsyncKeyState('Q') & 0x8000) break;
-    }
 
         DWORD speed = (DWORD)max(50, 200 - level * 10);
+
         if (GetTickCount() - lastFall >= speed) {
-            if (canMove(0, 1)) y++;
+            if (canMove(0, 1)) {
+                currentPiece->y++;
+            }
             else {
                 block2Board();
                 removeLine();
-                x = (GAME_W - 2) / 2;
-                y = 0;
-                b = nextBlock;
-                nextBlock = rand() % 8;
-                if (!canMove(0,0)) break; 
+
+                delete currentPiece;
+                currentPiece = nextPiece;
+                nextPiece = createPiece();
+
+                if (!canMove(0, 0)) break;
             }
+
             lastFall = GetTickCount();
         }
 
@@ -537,6 +633,9 @@ DWORD inputDelay = 50;
         draw();
         Sleep(1);
     }
+
+    delete currentPiece;
+    delete nextPiece;
 
     return 0;
 }
