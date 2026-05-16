@@ -488,7 +488,7 @@ void drawNextBlock(){
     int infoY = OFFSET_Y + 10;
 
     gotoxy(infoX, infoY);
-    cout << "NEXT";
+    cout << "NEXT BLOCK";
 
     gotoxy(infoX, infoY + 1);
     cout << "╔════════╗";
@@ -547,7 +547,7 @@ void drawNextBlock(){
 void drawInfo(){
 
     int infoX = OFFSET_X + GAME_W + 6;
-    int infoY = OFFSET_Y - 6;
+    int infoY = OFFSET_Y;
 
     string title[] = {
 
@@ -580,16 +580,16 @@ void drawInfo(){
 
     drawNextBlock();
 
-    gotoxy(infoX, infoY + 26);
+    gotoxy(infoX, infoY + 24);
     cout << "[A][D] MOVE";
 
-    gotoxy(infoX, infoY + 27);
+    gotoxy(infoX, infoY + 25);
     cout << "[X] FAST DROP";
 
-    gotoxy(infoX, infoY + 28);
+    gotoxy(infoX, infoY + 26);
     cout << "[W] ROTATE";
 
-    gotoxy(infoX, infoY + 29);
+    gotoxy(infoX, infoY + 27);
     cout << "[Q] QUIT";
 }
 
