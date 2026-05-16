@@ -350,31 +350,23 @@ void rotateBlock() {
         int testX = oldX + kick[k];
 
         for (int i = 0; i < 4 && ok; i++) {
+
             for (int j = 0; j < 4; j++) {
+
                 if (currentPiece->shape[i][j] != ' ') {
+
                     int tx = testX + j;
                     int ty = currentPiece->y + i;
 
-                    if (tx < 2 || tx >= GAME_W - 2 || ty >= H - 1 || board[ty][tx] != ' ') {
+                    if (tx < 1 ||
+                        tx >= GAME_W - 1 ||
+                        ty >= H - 1 ||
+                        board[ty][tx] != ' ') {
+
                         ok = false;
                         break;
                     }
                 }
-            }
-        }
-
-        if (ok) {
-            canRotate = true;
-            currentPiece->x = testX;
-        }
-    }
-
-    if (!canRotate) {
-        currentPiece->x = oldX;
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                currentPiece->shape[i][j] = oldShape[i][j];
             }
         }
     }
@@ -423,7 +415,7 @@ void removeLine(){
 
         for (int i = 1; i < H-1; i++) {
             if (fullRows[i]) {
-                for (int j = 2 ; j < GAME_W-2 ; j++) board[i][j] = ' ';
+                for (int j = 1; j < GAME_W - 1; j++) board[i][j] = ' ';
             }
         }
 
@@ -435,7 +427,7 @@ void removeLine(){
 
     for (int readRow = H - 2; readRow > 0; readRow--) {
         if (!fullRows[readRow]) {
-            for (int j = 2; j < GAME_W - 2; j++) {
+            for (int j = 1; j < GAME_W - 1; j++) {
                 board[writeRow][j] = board[readRow][j];
             }
             writeRow--;
@@ -443,7 +435,7 @@ void removeLine(){
     }
 
     for (; writeRow > 0; writeRow--) {
-        for (int j = 2; j < GAME_W - 2; j++) {
+        for (int j = 1; j < GAME_W - 1; j++) {
             board[writeRow][j] = ' ';
         }
     }
