@@ -91,9 +91,9 @@ public:
     virtual ~Piece() {}
 };
 
-class LinePiece : public Piece {
+class IPiece : public Piece {
 public:
-    LinePiece(int startX, int startY, int c, char s[4][4])
+    IPiece(int startX, int startY, int c, char s[4][4])
         : Piece(startX, startY, c, s) {}
 
     void rotate() override {
@@ -257,9 +257,9 @@ Piece* createPiece() {
 
     switch (type) {
     case 0:
-        return new LinePiece(startX, startY, type, blocks[type]);
+        return new IPiece(startX, startY, type, blocks[type]);
     case 1:
-        return new SquarePiece(startX, startY, type, blocks[type]);
+        return new OPiece(startX, startY, type, blocks[type]);
     case 2:
         return new TPiece(startX, startY, type, blocks[type]);
     case 3:
@@ -271,7 +271,7 @@ Piece* createPiece() {
     case 6:
         return new LPiece(startX, startY, type, blocks[type]);
     default:
-        return new LinePiece(startX, startY, type, blocks[type]);
+        return new IPiece(startX, startY, type, blocks[type]);
     }
 }
 
