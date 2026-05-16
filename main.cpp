@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define H 30
+#define H 28
 #define GAME_W 30
 
 int OFFSET_X;
@@ -299,30 +299,12 @@ void block2Board(){
 }
 
 void initBoard(){
+
     for (int i = 0 ; i < H ; i++){
+
         for (int j = 0 ; j < GAME_W ; j++){
-            if (i == H-1){
-                if (j == 0)
-                    board[i][j] = '<';
-                else if (j == 1)
-                    board[i][j] = '!';
-                else if (j == GAME_W-2)
-                    board[i][j] = '!';
-                else if (j == GAME_W-1)
-                    board[i][j] = '>';
-                else
-                    board[i][j] = '=';
-            }
-            else if (j == 0)
-                board[i][j] = '<';
-            else if (j == 1)
-                board[i][j] = '!';
-            else if (j == GAME_W-2)
-                board[i][j] = '!';
-            else if (j == GAME_W-1)
-                board[i][j] = '>';
-            else
-                board[i][j] = ' ';
+
+            board[i][j] = ' ';
         }
     }
 }
@@ -334,7 +316,7 @@ bool canMove(Piece* piece, int dx, int dy) {
                 int tx = piece->x + j + dx;
                 int ty = piece->y + i + dy;
 
-                if (tx < 2 || tx >= GAME_W-2 || ty >= H-1)
+                if (tx < 1 || tx >= GAME_W-1 || ty >= H-1)
                     return false;
 
                 if (board[ty][tx] != ' ')
@@ -501,89 +483,283 @@ void removeLine(){
 }
 
 void drawNextBlock(){
-    int infoX = OFFSET_X + GAME_W + 2;
-    int infoY = OFFSET_Y + 11;
 
-    gotoxy(infoX, infoY);     cout << "╔══════════════════════╗";
-    gotoxy(infoX, infoY + 1); cout << "║      NEXT BLOCK      ║";
-    gotoxy(infoX, infoY + 2); cout << "╠══════════════════════╣";
+    int infoX = OFFSET_X + GAME_W + 6;
+    int infoY = OFFSET_Y + 10;
 
-    for (int i = 0; i < 4; i++) {
-        gotoxy(infoX, infoY + 3 + i);
-        cout << "║                      ║";
-    }
+    gotoxy(infoX, infoY);
+    cout << "NEXT";
 
-    gotoxy(infoX, infoY + 7); cout << "╚══════════════════════╝";
-
-    int blockStartX = infoX + 10;
-    int blockStartY = infoY + 3;
+    gotoxy(infoX, infoY + 1);
+    cout << "╔════════╗";
 
     for (int i = 0 ; i < 4 ; i++){
-        gotoxy(blockStartX, blockStartY + i);
+
+        gotoxy(infoX, infoY + 2 + i);
+        cout << "║        ║";
+    }
+
+    gotoxy(infoX, infoY + 6);
+    cout << "╚════════╝";
+
+    int minX = 4;
+    int maxX = 0;
+    int minY = 4;
+    int maxY = 0;
+
+    for (int i = 0 ; i < 4 ; i++){
+
         for (int j = 0 ; j < 4 ; j++){
-            cout << nextPiece->shape[i][j];
+
+            if (nextPiece->shape[i][j] != ' '){
+
+                minX = min(minX, j);
+                maxX = max(maxX, j);
+
+                minY = min(minY, i);
+                maxY = max(maxY, i);
+            }
+        }
+    }
+
+    int blockWidth = maxX - minX + 1;
+    int blockHeight = maxY - minY + 1;
+
+    int startX = infoX + 1 + (8 - blockWidth) / 2;
+    int startY = infoY + 2 + (4 - blockHeight) / 2;
+
+    for (int i = minY ; i <= maxY ; i++){
+
+        gotoxy(startX, startY + (i - minY));
+
+        for (int j = minX ; j <= maxX ; j++){
+
+            char c = nextPiece->shape[i][j];
+
+            if (c != ' ')
+                cout << c;
+            else
+                cout << ' ';
         }
     }
 }
 
 void drawInfo(){
-    int infoX = OFFSET_X + GAME_W + 2;
-    int infoY = OFFSET_Y;
 
-    gotoxy(infoX, infoY);     cout << "╔══════════════════════╗";
-    gotoxy(infoX, infoY + 1); cout << "║        TETRIS        ║";
-    gotoxy(infoX, infoY + 2); cout << "╠══════════════════════╣";
-    gotoxy(infoX, infoY + 3); cout << "║ SCORE      :         ║";
-    gotoxy(infoX, infoY + 4); cout << "╠══════════════════════╣";
-    gotoxy(infoX, infoY + 5); cout << "║ HIGH SCORE :         ║";
-    gotoxy(infoX, infoY + 6); cout << "╠══════════════════════╣";
-    gotoxy(infoX, infoY + 7); cout << "║ LEVEL      :         ║";
-    gotoxy(infoX, infoY + 8); cout << "╠══════════════════════╣";
-    gotoxy(infoX, infoY + 9); cout << "║ LINES      :         ║";
-    gotoxy(infoX, infoY + 10);cout << "╚══════════════════════╝";
+    int infoX = OFFSET_X + GAME_W + 6;
+    int infoY = OFFSET_Y - 6;
 
-    gotoxy(infoX + 15, infoY + 3); cout << "       ";
-    gotoxy(infoX + 15, infoY + 3); cout << score;
+    string title[] = {
 
-    gotoxy(infoX + 15, infoY + 5); cout << "       ";
-    gotoxy(infoX + 15, infoY + 5); cout << highScore;
+"████████╗███████╗████████╗██████╗ ██╗███████╗",
+"╚══██╔══╝██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝",
+"   ██║   █████╗     ██║   ██████╔╝██║███████╗",
+"   ██║   ██╔══╝     ██║   ██╔══██╗██║╚════██║",
+"   ██║   ███████╗   ██║   ██║  ██║██║███████║",
+"   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝"
+    };
 
-    gotoxy(infoX + 15, infoY + 7); cout << "       ";
-    gotoxy(infoX + 15, infoY + 7); cout << level;
+    for (int i = 0 ; i < 6 ; i++){
 
-    gotoxy(infoX + 15, infoY + 9); cout << "       ";
-    gotoxy(infoX + 15, infoY + 9); cout << linesCleared;
+        gotoxy(infoX, infoY + i);
+
+        cout << title[i];
+    }
+
+    gotoxy(infoX, infoY + 8);
+    cout << "SCORE : " << score;
+
+    gotoxy(infoX, infoY + 10);
+    cout << "LEVEL : " << level;
+
+    gotoxy(infoX, infoY + 12);
+    cout << "HIGH SCORE : " << highScore;
+
+    gotoxy(infoX, infoY + 15);
+    cout << "LINES : " << linesCleared;
 
     drawNextBlock();
+
+    gotoxy(infoX, infoY + 26);
+    cout << "[A][D] MOVE";
+
+    gotoxy(infoX, infoY + 27);
+    cout << "[X] FAST DROP";
+
+    gotoxy(infoX, infoY + 28);
+    cout << "[W] ROTATE";
+
+    gotoxy(infoX, infoY + 29);
+    cout << "[Q] QUIT";
 }
 
-void draw(Piece* piece) {
-    for (int i = 0 ; i < H ; i++){
-        gotoxy(OFFSET_X, OFFSET_Y + i);
+int getDropPreviewY(Piece* piece){
 
-        for (int j = 0 ; j < GAME_W ; j++){
-                char cell = board[i][j];
-            if (piece != nullptr) {
-                for (int pi = 0; pi < 4; pi++) {
-                    for (int pj = 0; pj < 4; pj++) {
-                        if (piece->shape[pi][pj] != ' ' &&
-                            piece->y + pi == i &&
-                            piece->x + pj == j) {
-                            cell = piece->shape[pi][pj];
-                        }
+    int previewY = piece->y;
+
+    while (1){
+
+        bool ok = true;
+
+        for (int i = 0 ; i < 4 ; i++){
+
+            for (int j = 0 ; j < 4 ; j++){
+
+                if (piece->shape[i][j] != ' '){
+
+                    int tx = piece->x + j;
+                    int ty = previewY + i + 1;
+
+                    if (tx < 1 ||
+                        tx >= GAME_W - 1 ||
+                        ty >= H - 1){
+
+                        ok = false;
+                    }
+
+                    else if (board[ty][tx] != ' '){
+
+                        ok = false;
                     }
                 }
             }
-             if (cell == ' ') {
-                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
-                 cout << '.';
-                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
-             }
-             else {
-                 cout << cell;
-             }
+        }
+
+        if (!ok)
+            break;
+
+        previewY++;
+    }
+
+    return previewY;
+}
+
+void draw(Piece* piece){
+
+    boardDelBlock();
+
+    int previewY = getDropPreviewY(piece);
+
+    for (int i = 0 ; i < H ; i++){
+
+        gotoxy(OFFSET_X, OFFSET_Y + i);
+
+        for (int j = 0 ; j < GAME_W ; j++){
+
+            // border
+            if (i == 0 && j == 0){
+
+                cout << "╔";
+            }
+
+            else if (i == 0 && j == GAME_W - 1){
+
+                cout << "╗";
+            }
+
+            else if (i == H - 1 && j == 0){
+
+                cout << "╚";
+            }
+
+            else if (i == H - 1 && j == GAME_W - 1){
+
+                cout << "╝";
+            }
+
+            else if (i == 0 || i == H - 1){
+
+                cout << "═";
+            }
+
+            else if (j == 0 || j == GAME_W - 1){
+
+                cout << "║";
+            }
+
+            else{
+
+                char cell = board[i][j];
+
+                bool drawn = false;
+
+                // current block
+                for (int bi = 0 ; bi < 4 ; bi++){
+
+                    for (int bj = 0 ; bj < 4 ; bj++){
+
+                        if (piece->shape[bi][bj] != ' '){
+
+                            if (i == piece->y + bi &&
+                                j == piece->x + bj){
+
+                                cout << piece->shape[bi][bj];
+
+                                drawn = true;
+                            }
+                        }
+                    }
+                }
+
+                // preview block
+                if (!drawn){
+
+                    for (int bi = 0 ; bi < 4 ; bi++){
+
+                        for (int bj = 0 ; bj < 4 ; bj++){
+
+                            if (piece->shape[bi][bj] != ' '){
+
+                                if (i == previewY + bi &&
+                                    j == piece->x + bj){
+
+                                    SetConsoleTextAttribute(
+                                        GetStdHandle(STD_OUTPUT_HANDLE),
+                                        8
+                                    );
+
+                                    cout << piece->shape[bi][bj];
+
+                                    SetConsoleTextAttribute(
+                                        GetStdHandle(STD_OUTPUT_HANDLE),
+                                        10
+                                    );
+
+                                    drawn = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // empty
+                if (!drawn){
+
+                    if (cell == ' '){
+
+                        SetConsoleTextAttribute(
+                            GetStdHandle(STD_OUTPUT_HANDLE),
+                            8
+                        );
+
+                        cout << '.';
+
+                        SetConsoleTextAttribute(
+                            GetStdHandle(STD_OUTPUT_HANDLE),
+                            10
+                        );
+                    }
+
+                    else{
+
+                        cout << cell;
+                    }
+                }
+            }
         }
     }
+
+    block2Board();
 
     drawInfo();
 }
