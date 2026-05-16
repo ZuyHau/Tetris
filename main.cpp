@@ -26,13 +26,6 @@ char blocks[][4][4] = {
 
     {
         {' ',' ',' ',' '},
-        {'I','I','I','I'},
-        {' ',' ',' ',' '},
-        {' ',' ',' ',' '}
-    },
-
-    {
-        {' ',' ',' ',' '},
         {' ','O','O',' '},
         {' ','O','O',' '},
         {' ',' ',' ',' '}
@@ -98,9 +91,9 @@ public:
     virtual ~Piece() {}
 };
 
-class NormalPiece : public Piece {
+class LinePiece : public Piece {
 public:
-    NormalPiece(int startX, int startY, int c, char s[4][4])
+    LinePiece(int startX, int startY, int c, char s[4][4])
         : Piece(startX, startY, c, s) {}
 
     void rotate() override {
@@ -130,6 +123,125 @@ public:
     }
 };
 
+class TPiece : public Piece {
+public:
+    TPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+
+class SPiece : public Piece {
+public:
+    SPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+
+class ZPiece : public Piece {
+public:
+    ZPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+
+class JPiece : public Piece {
+public:
+    JPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+class LPiece : public Piece {
+public:
+    LPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+
 Piece* currentPiece = nullptr;
 Piece* nextPiece = nullptr;
 
@@ -139,15 +251,28 @@ int level = 1;
 int linesCleared = 0;
 
 Piece* createPiece() {
-    int type = rand() % 8;
+    int type = rand() % 7;
     int startX = (GAME_W - 2) / 2;
     int startY = 0;
 
-    if (type == 2) {
-        return new OPiece(startX, startY, type, blocks[type]);
+    switch (type) {
+    case 0:
+        return new LinePiece(startX, startY, type, blocks[type]);
+    case 1:
+        return new SquarePiece(startX, startY, type, blocks[type]);
+    case 2:
+        return new TPiece(startX, startY, type, blocks[type]);
+    case 3:
+        return new SPiece(startX, startY, type, blocks[type]);
+    case 4:
+        return new ZPiece(startX, startY, type, blocks[type]);
+    case 5:
+        return new JPiece(startX, startY, type, blocks[type]);
+    case 6:
+        return new LPiece(startX, startY, type, blocks[type]);
+    default:
+        return new LinePiece(startX, startY, type, blocks[type]);
     }
-
-    return new NormalPiece(startX, startY, type, blocks[type]);
 }
 
 void gotoxy(int x, int y){
