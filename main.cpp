@@ -118,9 +118,7 @@ public:
     OPiece(int startX, int startY, int c, char s[4][4])
         : Piece(startX, startY, c, s) {}
 
-    void rotate() override {
-
-    }
+    void rotate() override {}
 };
 
 class TPiece : public Piece {
@@ -329,12 +327,12 @@ void initBoard(){
     }
 }
 
-bool canMove(int dx, int dy){
+bool canMove(Piece* piece, int dx, int dy) {
     for (int i = 0 ; i < 4 ; i++){
         for (int j = 0 ; j < 4 ; j++){
-            if (currentPiece->shape[i][j] != ' '){
-                int tx = currentPiece->x + j + dx;
-                int ty = currentPiece->y + i + dy;
+            if (piece->shape[i][j] != ' '){
+                int tx = piece->x + j + dx;
+                int ty = piece->y + i + dy;
 
                 if (tx < 2 || tx >= GAME_W-2 || ty >= H-1)
                     return false;
@@ -412,7 +410,7 @@ void hideCursor()
     SetConsoleCursorInfo(h, &info);
 }
 
-void draw();
+void draw(Piece* piece);
 
 void removeLine(){
     int linesThisTurn = 0;
@@ -438,7 +436,7 @@ void removeLine(){
             }
         }
 
-        draw();
+        draw(currentPiece);
         Sleep(100);
 
         for (int i = 1; i < H-1; i++) {
@@ -447,7 +445,7 @@ void removeLine(){
             }
         }
 
-        draw();
+        draw(currentPiece);
         Sleep(100);
     }
 
@@ -559,19 +557,31 @@ void drawInfo(){
     drawNextBlock();
 }
 
-void draw(){
+void draw(Piece* piece) {
     for (int i = 0 ; i < H ; i++){
         gotoxy(OFFSET_X, OFFSET_Y + i);
 
         for (int j = 0 ; j < GAME_W ; j++){
-            if (board[i][j] == ' ') {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
-                cout << '.';
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
+                char cell = board[i][j];
+            if (piece != nullptr) {
+                for (int pi = 0; pi < 4; pi++) {
+                    for (int pj = 0; pj < 4; pj++) {
+                        if (piece->shape[pi][pj] != ' ' &&
+                            piece->y + pi == i &&
+                            piece->x + pj == j) {
+                            cell = piece->shape[pi][pj];
+                        }
+                    }
+                }
             }
-            else {
-                cout << board[i][j];
-            }
+             if (cell == ' ') {
+                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+                 cout << '.';
+                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
+             }
+             else {
+                 cout << cell;
+             }
         }
     }
 
@@ -711,17 +721,17 @@ int main(){
 
         if (GetTickCount() - lastInput >= inputDelay) {
             if (GetAsyncKeyState('A') & 0x8000) {
-                if (canMove(-1, 0)) currentPiece->x--;
+                if (canMove(currentPiece,-1, 0)) currentPiece->x--;
                 lastInput = GetTickCount();
             }
 
             if (GetAsyncKeyState('D') & 0x8000) {
-                if (canMove(1, 0)) currentPiece->x++;
+                if (canMove(currentPiece,1, 0)) currentPiece->x++;
                 lastInput = GetTickCount();
             }
 
             if (GetAsyncKeyState('X') & 0x8000) {
-                if (canMove(0, 1)) currentPiece->y++;
+                if (canMove(currentPiece,0, 1)) currentPiece->y++;
                 lastInput = GetTickCount();
             }
 
@@ -737,7 +747,7 @@ int main(){
         DWORD speed = (DWORD)max(50, 200 - level * 10);
 
         if (GetTickCount() - lastFall >= speed) {
-            if (canMove(0, 1)) {
+            if (canMove(currentPiece,0, 1)) {
                 currentPiece->y++;
             }
             else {
@@ -748,14 +758,14 @@ int main(){
                 currentPiece = nextPiece;
                 nextPiece = createPiece();
 
-                if (!canMove(0, 0)) break;
+                if (!canMove(currentPiece,0, 0)) break;
             }
 
             lastFall = GetTickCount();
         }
 
         block2Board();
-        draw();
+        draw(currentPiece);
         Sleep(1);
     }
 
