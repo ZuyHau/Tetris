@@ -26,13 +26,6 @@ char blocks[][4][4] = {
 
     {
         {' ',' ',' ',' '},
-        {'I','I','I','I'},
-        {' ',' ',' ',' '},
-        {' ',' ',' ',' '}
-    },
-
-    {
-        {' ',' ',' ',' '},
         {' ','O','O',' '},
         {' ','O','O',' '},
         {' ',' ',' ',' '}
@@ -98,9 +91,9 @@ public:
     virtual ~Piece() {}
 };
 
-class NormalPiece : public Piece {
+class IPiece : public Piece {
 public:
-    NormalPiece(int startX, int startY, int c, char s[4][4])
+    IPiece(int startX, int startY, int c, char s[4][4])
         : Piece(startX, startY, c, s) {}
 
     void rotate() override {
@@ -125,10 +118,127 @@ public:
     OPiece(int startX, int startY, int c, char s[4][4])
         : Piece(startX, startY, c, s) {}
 
-    void rotate() override {
+    void rotate() override {}
+};
 
+class TPiece : public Piece {
+public:
+    TPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
     }
 };
+
+
+class SPiece : public Piece {
+public:
+    SPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+
+class ZPiece : public Piece {
+public:
+    ZPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+
+class JPiece : public Piece {
+public:
+    JPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
+class LPiece : public Piece {
+public:
+    LPiece(int startX, int startY, int c, char s[4][4])
+        : Piece(startX, startY, c, s) {
+    }
+
+    void rotate() override {
+        char temp[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                temp[j][3 - i] = shape[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                shape[i][j] = temp[i][j];
+            }
+        }
+    }
+};
+
 
 Piece* currentPiece = nullptr;
 Piece* nextPiece = nullptr;
@@ -139,15 +249,28 @@ int level = 1;
 int linesCleared = 0;
 
 Piece* createPiece() {
-    int type = rand() % 8;
+    int type = rand() % 7;
     int startX = (GAME_W - 2) / 2;
     int startY = 0;
 
-    if (type == 2) {
+    switch (type) {
+    case 0:
+        return new IPiece(startX, startY, type, blocks[type]);
+    case 1:
         return new OPiece(startX, startY, type, blocks[type]);
+    case 2:
+        return new TPiece(startX, startY, type, blocks[type]);
+    case 3:
+        return new SPiece(startX, startY, type, blocks[type]);
+    case 4:
+        return new ZPiece(startX, startY, type, blocks[type]);
+    case 5:
+        return new JPiece(startX, startY, type, blocks[type]);
+    case 6:
+        return new LPiece(startX, startY, type, blocks[type]);
+    default:
+        return new IPiece(startX, startY, type, blocks[type]);
     }
-
-    return new NormalPiece(startX, startY, type, blocks[type]);
 }
 
 void gotoxy(int x, int y){
@@ -204,12 +327,12 @@ void initBoard(){
     }
 }
 
-bool canMove(int dx, int dy){
+bool canMove(Piece* piece, int dx, int dy) {
     for (int i = 0 ; i < 4 ; i++){
         for (int j = 0 ; j < 4 ; j++){
-            if (currentPiece->shape[i][j] != ' '){
-                int tx = currentPiece->x + j + dx;
-                int ty = currentPiece->y + i + dy;
+            if (piece->shape[i][j] != ' '){
+                int tx = piece->x + j + dx;
+                int ty = piece->y + i + dy;
 
                 if (tx < 2 || tx >= GAME_W-2 || ty >= H-1)
                     return false;
@@ -287,7 +410,7 @@ void hideCursor()
     SetConsoleCursorInfo(h, &info);
 }
 
-void draw();
+void draw(Piece* piece);
 
 void removeLine(){
     int linesThisTurn = 0;
@@ -313,7 +436,7 @@ void removeLine(){
             }
         }
 
-        draw();
+        draw(currentPiece);
         Sleep(100);
 
         for (int i = 1; i < H-1; i++) {
@@ -322,7 +445,7 @@ void removeLine(){
             }
         }
 
-        draw();
+        draw(currentPiece);
         Sleep(100);
     }
 
@@ -434,19 +557,31 @@ void drawInfo(){
     drawNextBlock();
 }
 
-void draw(){
+void draw(Piece* piece) {
     for (int i = 0 ; i < H ; i++){
         gotoxy(OFFSET_X, OFFSET_Y + i);
 
         for (int j = 0 ; j < GAME_W ; j++){
-            if (board[i][j] == ' ') {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
-                cout << '.';
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
+                char cell = board[i][j];
+            if (piece != nullptr) {
+                for (int pi = 0; pi < 4; pi++) {
+                    for (int pj = 0; pj < 4; pj++) {
+                        if (piece->shape[pi][pj] != ' ' &&
+                            piece->y + pi == i &&
+                            piece->x + pj == j) {
+                            cell = piece->shape[pi][pj];
+                        }
+                    }
+                }
             }
-            else {
-                cout << board[i][j];
-            }
+             if (cell == ' ') {
+                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
+                 cout << '.';
+                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
+             }
+             else {
+                 cout << cell;
+             }
         }
     }
 
@@ -586,17 +721,17 @@ int main(){
 
         if (GetTickCount() - lastInput >= inputDelay) {
             if (GetAsyncKeyState('A') & 0x8000) {
-                if (canMove(-1, 0)) currentPiece->x--;
+                if (canMove(currentPiece,-1, 0)) currentPiece->x--;
                 lastInput = GetTickCount();
             }
 
             if (GetAsyncKeyState('D') & 0x8000) {
-                if (canMove(1, 0)) currentPiece->x++;
+                if (canMove(currentPiece,1, 0)) currentPiece->x++;
                 lastInput = GetTickCount();
             }
 
             if (GetAsyncKeyState('X') & 0x8000) {
-                if (canMove(0, 1)) currentPiece->y++;
+                if (canMove(currentPiece,0, 1)) currentPiece->y++;
                 lastInput = GetTickCount();
             }
 
@@ -612,7 +747,7 @@ int main(){
         DWORD speed = (DWORD)max(50, 200 - level * 10);
 
         if (GetTickCount() - lastFall >= speed) {
-            if (canMove(0, 1)) {
+            if (canMove(currentPiece,0, 1)) {
                 currentPiece->y++;
             }
             else {
@@ -623,14 +758,14 @@ int main(){
                 currentPiece = nextPiece;
                 nextPiece = createPiece();
 
-                if (!canMove(0, 0)) break;
+                if (!canMove(currentPiece,0, 0)) break;
             }
 
             lastFall = GetTickCount();
         }
 
         block2Board();
-        draw();
+        draw(currentPiece);
         Sleep(1);
     }
 
