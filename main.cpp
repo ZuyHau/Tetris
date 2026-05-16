@@ -400,10 +400,10 @@ void removeLine(){
 
     for (int i = H-2 ; i > 0 ; i--){
         int j;
-        for (j = 2 ; j < GAME_W-2 ; j++){
+        for (j = 1 ; j < GAME_W-1 ; j++){
             if (board[i][j] == ' ') break;
         }
-        if (j == GAME_W-2){
+        if (j == GAME_W-1){
             fullRows[i] = true;
             linesThisTurn++;
         }
@@ -414,7 +414,7 @@ void removeLine(){
     for (int blink = 0 ; blink < 3 ; blink++){
         for (int i = 1; i < H-1; i++) {
             if (fullRows[i]) {
-                for (int j = 2 ; j < GAME_W-2 ; j++) board[i][j] = '#';
+                for (int j = 1 ; j < GAME_W-1 ; j++) board[i][j] = '#';
             }
         }
 
@@ -485,10 +485,10 @@ void removeLine(){
 void drawNextBlock(){
 
     int infoX = OFFSET_X + GAME_W + 6;
-    int infoY = OFFSET_Y + 10;
+    int infoY = OFFSET_Y + 16;
 
     gotoxy(infoX, infoY);
-    cout << "NEXT";
+    cout << "NEXT BLOCK";
 
     gotoxy(infoX, infoY + 1);
     cout << "╔════════╗";
@@ -547,7 +547,7 @@ void drawNextBlock(){
 void drawInfo(){
 
     int infoX = OFFSET_X + GAME_W + 6;
-    int infoY = OFFSET_Y - 6;
+    int infoY = OFFSET_Y;
 
     string title[] = {
 
@@ -575,22 +575,22 @@ void drawInfo(){
     gotoxy(infoX, infoY + 12);
     cout << "HIGH SCORE : " << highScore;
 
-    gotoxy(infoX, infoY + 15);
+    gotoxy(infoX, infoY + 14);
     cout << "LINES : " << linesCleared;
 
     drawNextBlock();
 
-    gotoxy(infoX, infoY + 26);
+    gotoxy(infoX, infoY + 24);
     cout << "[A][D] MOVE";
 
-    gotoxy(infoX, infoY + 27);
+    gotoxy(infoX, infoY + 25);
     cout << "[X] FAST DROP";
 
-    gotoxy(infoX, infoY + 28);
+    gotoxy(infoX, infoY + 26);
     cout << "[W] ROTATE";
 
-    gotoxy(infoX, infoY + 29);
-    cout << "[Q] QUIT";
+    gotoxy(infoX, infoY + 27);
+    cout << "[Q] RETURN TO MENU";
 }
 
 int getDropPreviewY(Piece* piece){
@@ -862,91 +862,223 @@ void centerGame(){
     OFFSET_Y = (consoleHeight - H) / 2;
 }
 
+void gameOverScreen(){
+
+    system("cls");
+
+    string over[] = {
+
+"   █████████    █████████   ██████   ██████ ██████████       ███████    █████   █████ ██████████ ███████████  ",
+"  ███▒▒▒▒▒███  ███▒▒▒▒▒███ ▒▒██████ ██████ ▒▒███▒▒▒▒▒█     ███▒▒▒▒▒███ ▒▒███   ▒▒███ ▒▒███▒▒▒▒▒█▒▒███▒▒▒▒▒███ ",
+" ███     ▒▒▒  ▒███    ▒███  ▒███▒█████▒███  ▒███  █ ▒     ███     ▒▒███ ▒███    ▒███  ▒███  █ ▒  ▒███    ▒███ ",
+"▒███          ▒███████████  ▒███▒▒███ ▒███  ▒██████      ▒███      ▒███ ▒███    ▒███  ▒██████    ▒██████████  ",
+"▒███    █████ ▒███▒▒▒▒▒███  ▒███ ▒▒▒  ▒███  ▒███▒▒█      ▒███      ▒███ ▒▒███   ███   ▒███▒▒█    ▒███▒▒▒▒▒███ ",
+"▒▒███  ▒▒███  ▒███    ▒███  ▒███      ▒███  ▒███ ▒   █   ▒▒███     ███   ▒▒▒█████▒    ▒███ ▒   █ ▒███    ▒███ ",
+" ▒▒█████████  █████   █████ █████     █████ ██████████    ▒▒▒███████▒      ▒▒███      ██████████ █████   █████",
+"  ▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒   ▒▒▒▒▒ ▒▒▒▒▒     ▒▒▒▒▒ ▒▒▒▒▒▒▒▒▒▒       ▒▒▒▒▒▒▒         ▒▒▒      ▒▒▒▒▒▒▒▒▒▒ ▒▒▒▒▒   ▒▒▒▒▒ "
+    };
+
+    int startX = 10;
+    int startY = 6;
+
+    for (int i = 0 ; i < 8; i++){
+
+        gotoxy(startX, startY + i);
+
+        cout << over[i];
+    }
+
+    gotoxy(startX + 40, startY + 12);
+    cout << "HIGH SCORE : " << highScore;
+
+    gotoxy(startX + 40, startY + 14);
+    cout << "YOUR SCORE : " << score;
+
+    gotoxy(startX + 34, startY + 18);
+    cout << "PRESS Q TO RETURN TO MENU";
+
+    while (1){
+
+        if (_kbhit()){
+
+            char c = _getch();
+
+            if (c == 'q' || c == 'Q')
+                break;
+        }
+
+        Sleep(1);
+    }
+}
+
 int main(){
+
     system("chcp 65001 > nul");
 
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+
     hideCursor();
 
     system("mode con cols=140 lines=40");
-    system("cls");
-    centerGame();
-    system("color 0A");
 
     srand(time(0));
 
-    drawMenu();
-
-    while (getch() != 13);
-
-    system("cls");
-
-    currentPiece = createPiece();
-    nextPiece = createPiece();
-
-    DWORD lastFall = GetTickCount();
-
-    initBoard();
-
-    DWORD lastInput = GetTickCount();
-    DWORD inputDelay = 50;
-
     while (1){
-        boardDelBlock();
 
-        if (GetTickCount() - lastInput >= inputDelay) {
-            if (GetAsyncKeyState('A') & 0x8000) {
-                if (canMove(currentPiece,-1, 0)) currentPiece->x--;
-                lastInput = GetTickCount();
-            }
+        system("cls");
 
-            if (GetAsyncKeyState('D') & 0x8000) {
-                if (canMove(currentPiece,1, 0)) currentPiece->x++;
-                lastInput = GetTickCount();
-            }
+        centerGame();
 
-            if (GetAsyncKeyState('X') & 0x8000) {
-                if (canMove(currentPiece,0, 1)) currentPiece->y++;
-                lastInput = GetTickCount();
-            }
+        system("color 0A");
 
-            if (GetAsyncKeyState('W') & 0x8000) {
-                rotateBlock();
-                lastInput = GetTickCount();
-                Sleep(150);
-            }
+        drawMenu();
 
-            if (GetAsyncKeyState('Q') & 0x8000) break;
+        while (1){
+
+            char c = getch();
+
+            if (c == 13)
+                break;
+
+            if (c == 'q' || c == 'Q')
+                return 0;
         }
 
-        DWORD speed = (DWORD)max(50, 200 - level * 10);
+        system("cls");
 
-        if (GetTickCount() - lastFall >= speed) {
-            if (canMove(currentPiece,0, 1)) {
-                currentPiece->y++;
-            }
-            else {
-                block2Board();
-                removeLine();
+        initBoard();
 
-                delete currentPiece;
-                currentPiece = nextPiece;
-                nextPiece = createPiece();
+        score = 0;
+        level = 1;
+        linesCleared = 0;
 
-                if (!canMove(currentPiece,0, 0)) break;
-            }
+        if (currentPiece != nullptr){
 
-            lastFall = GetTickCount();
+            delete currentPiece;
+            currentPiece = nullptr;
         }
 
-        block2Board();
-        draw(currentPiece);
-        Sleep(1);
+        if (nextPiece != nullptr){
+
+            delete nextPiece;
+            nextPiece = nullptr;
+        }
+
+        currentPiece = createPiece();
+        nextPiece = createPiece();
+
+        DWORD lastFall = GetTickCount();
+
+        DWORD lastInput = GetTickCount();
+        DWORD inputDelay = 50;
+
+        bool quitToMenu = false;
+
+        while (1){
+
+            boardDelBlock();
+
+            if (GetTickCount() - lastInput >= inputDelay){
+
+                if (GetAsyncKeyState('A') & 0x8000){
+
+                    if (canMove(currentPiece, -1, 0))
+                        currentPiece->x--;
+
+                    lastInput = GetTickCount();
+                }
+
+                if (GetAsyncKeyState('D') & 0x8000){
+
+                    if (canMove(currentPiece, 1, 0))
+                        currentPiece->x++;
+
+                    lastInput = GetTickCount();
+                }
+
+                if (GetAsyncKeyState('X') & 0x8000){
+
+                    if (canMove(currentPiece, 0, 1))
+                        currentPiece->y++;
+
+                    lastInput = GetTickCount();
+                }
+
+                if (GetAsyncKeyState('W') & 0x8000){
+
+                    rotateBlock();
+
+                    lastInput = GetTickCount();
+
+                    Sleep(150);
+                }
+
+                if (GetAsyncKeyState('Q') & 0x8000){
+
+                    quitToMenu = true;
+
+                    while (GetAsyncKeyState('Q') & 0x8000);
+
+                    break;
+                }
+            }
+
+            DWORD speed =
+                (DWORD)max(50, 200 - level * 10);
+
+            if (GetTickCount() - lastFall >= speed){
+
+                if (canMove(currentPiece, 0, 1)){
+
+                    currentPiece->y++;
+                }
+
+                else{
+
+                    block2Board();
+
+                    removeLine();
+
+                    delete currentPiece;
+
+                    currentPiece = nextPiece;
+
+                    nextPiece = createPiece();
+
+                    if (!canMove(currentPiece, 0, 0)){
+
+                        gameOverScreen();
+
+                        break;
+                    }
+                }
+
+                lastFall = GetTickCount();
+            }
+
+            block2Board();
+
+            draw(currentPiece);
+
+            Sleep(1);
+        }
+
+        if (quitToMenu){
+
+            delete currentPiece;
+            delete nextPiece;
+
+            currentPiece = nullptr;
+            nextPiece = nullptr;
+
+            FlushConsoleInputBuffer(
+                GetStdHandle(STD_INPUT_HANDLE)
+            );
+
+            continue;
+        }
     }
-
-    delete currentPiece;
-    delete nextPiece;
 
     return 0;
 }
