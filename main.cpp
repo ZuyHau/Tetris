@@ -144,10 +144,10 @@ Piece* createPiece() {
     int startY = 0;
 
     if (type == 2) {
-        return new OPiece(startX, startY, type, blockTemplates[type]);
+        return new OPiece(startX, startY, type, blocks[type]);
     }
 
-    return new NormalPiece(startX, startY, type, blockTemplates[type]);
+    return new NormalPiece(startX, startY, type, blocks[type]);
 }
 
 void gotoxy(int x, int y){
