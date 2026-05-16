@@ -108,38 +108,7 @@ void initBoard(){
 
         for (int j = 0 ; j < GAME_W ; j++){
 
-            if (i == H-1){
-
-                if (j == 0)
-                    board[i][j] = '<';
-
-                else if (j == 1)
-                    board[i][j] = '!';
-
-                else if (j == GAME_W-2)
-                    board[i][j] = '!';
-
-                else if (j == GAME_W-1)
-                    board[i][j] = '>';
-
-                else
-                    board[i][j] = '=';
-            }
-
-            else if (j == 0)
-                board[i][j] = '<';
-
-            else if (j == 1)
-                board[i][j] = '!';
-
-            else if (j == GAME_W-2)
-                board[i][j] = '!';
-
-            else if (j == GAME_W-1)
-                board[i][j] = '>';
-
-            else
-                board[i][j] = ' ';
+            board[i][j] = ' ';
         }
     }
 }
@@ -155,7 +124,7 @@ bool canMove(int dx, int dy){
                 int tx = x + j + dx;
                 int ty = y + i + dy;
 
-                if (tx < 2 || tx >= GAME_W-2 || ty >= H-1)
+                if (tx < 1 || tx >= GAME_W-1 || ty >= H-1)
                     return false;
 
                 if (board[ty][tx] != ' ')
@@ -175,22 +144,23 @@ void removeLine(){
 
     for (int i = H-2 ; i > 0 ; i--){
 
-        for (j = 2 ; j < GAME_W-2 ; j++){
+        for (j = 1 ; j < GAME_W-1 ; j++){
 
             if (board[i][j] == ' ')
                 break;
         }
 
-        if (j == GAME_W-2){
+        if (j == GAME_W-1){
+
             for (int blink = 0 ; blink < 3 ; blink++){
 
-                for (int j = 2 ; j < GAME_W-2 ; j++)
+                for (int j = 1 ; j < GAME_W-1 ; j++)
                     board[i][j] = '#';
 
                 draw();
                 Sleep(100);
 
-                for (int j = 2 ; j < GAME_W-2 ; j++)
+                for (int j = 1 ; j < GAME_W-1 ; j++)
                     board[i][j] = ' ';
 
                 draw();
@@ -207,7 +177,7 @@ void removeLine(){
 
             for (int ii = i ; ii > 0 ; ii--){
 
-                for (int j = 2 ; j < GAME_W-2 ; j++)
+                for (int j = 1 ; j < GAME_W-1 ; j++)
                     board[ii][j] = board[ii-1][j];
             }
 
@@ -235,35 +205,153 @@ void drawNextBlock(){
         gotoxy(startX, startY + i);
 
         for (int j = 0 ; j < 4 ; j++){
-                cout << blocks[nextBlock][i][j];
+            cout << blocks[nextBlock][i][j];
         }
     }
 }
 
+int getDropPreviewY(){
+
+    int previewY = y;
+
+    while (1){
+
+        bool ok = true;
+
+        for (int i = 0 ; i < 4 ; i++){
+
+            for (int j = 0 ; j < 4 ; j++){
+
+                if (blocks[b][i][j] != ' '){
+
+                    int tx = x + j;
+                    int ty = previewY + i + 1;
+
+                    if (tx < 1 ||
+                        tx >= GAME_W-1 ||
+                        ty >= H-1 ||
+                        board[ty][tx] != ' '){
+
+                        ok = false;
+                    }
+                }
+            }
+        }
+
+        if (!ok)
+            break;
+
+        previewY++;
+    }
+
+    return previewY;
+}
+
 void drawInfo(){
 
-    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y);
-    cout << "╔══════════╗";
+    int infoX = OFFSET_X + GAME_W + 5;
 
-    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 1);
-    cout << "║  TETRIS  ║";
+    string title[] = {
 
-    gotoxy(OFFSET_X + GAME_W + 2, OFFSET_Y + 2);
-    cout << "╚══════════╝";
+"████████╗███████╗████████╗██████╗ ██╗███████╗",
+"╚══██╔══╝██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝",
+"   ██║   █████╗     ██║   ██████╔╝██║███████╗",
+"   ██║   ██╔══╝     ██║   ██╔══██╗██║╚════██║",
+"   ██║   ███████╗   ██║   ██║  ██║██║███████║",
+"   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝"
+    };
 
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 5);
+    for (int i = 0 ; i < 6 ; i++){
+
+        gotoxy(infoX, OFFSET_Y + i);
+
+        cout << title[i];
+    }
+
+    gotoxy(infoX, OFFSET_Y + 8);
     cout << "SCORE : " << score;
 
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 7);
-    cout << "HIGH SCORE  : " << highScore;
-
-    gotoxy(OFFSET_X + GAME_W + 3, OFFSET_Y + 9);
+    gotoxy(infoX, OFFSET_Y + 10);
     cout << "LEVEL : " << level;
 
-    drawNextBlock();
+    gotoxy(infoX, OFFSET_Y + 12);
+    cout << "HIGH SCORE : " << highScore;
+
+    gotoxy(infoX, OFFSET_Y + 16);
+    cout << "NEXT";
+
+    gotoxy(infoX, OFFSET_Y + 17);
+    cout << "╔════════╗";
+
+    for (int i = 0 ; i < 4 ; i++){
+
+        gotoxy(infoX, OFFSET_Y + 18 + i);
+        cout << "║        ║";
+    }
+
+    gotoxy(infoX, OFFSET_Y + 22);
+    cout << "╚════════╝";
+
+    for (int i = 0 ; i < 4 ; i++){
+
+        gotoxy(infoX + 1, OFFSET_Y + 18 + i);
+        cout << "        ";
+    }
+
+    int minX = 4;
+    int maxX = 0;
+    int minY = 4;
+    int maxY = 0;
+
+    for (int i = 0 ; i < 4 ; i++){
+
+        for (int j = 0 ; j < 4 ; j++){
+
+            if (blocks[nextBlock][i][j] != ' '){
+
+                minX = min(minX, j);
+                maxX = max(maxX, j);
+
+                minY = min(minY, i);
+                maxY = max(maxY, i);
+            }
+        }
+    }
+
+    int blockWidth = maxX - minX + 1;
+    int blockHeight = maxY - minY + 1;
+
+    int startX = infoX + 1 + (8 - blockWidth) / 2;
+    int startY = OFFSET_Y + 18 + (4 - blockHeight) / 2;
+
+    for (int i = minY ; i <= maxY ; i++){
+
+        gotoxy(startX, startY + (i - minY));
+
+        for (int j = minX ; j <= maxX ; j++){
+
+            char c = blocks[nextBlock][i][j];
+
+            if (c != ' ')
+                cout << c;
+            else
+                cout << ' ';
+        }
+    }
+
+    gotoxy(infoX, OFFSET_Y + 24);
+    cout << "[A][D] DI CHUYEN";
+
+    gotoxy(infoX, OFFSET_Y + 25);
+    cout << "[X] ROI NHANH";
+
+    gotoxy(infoX, OFFSET_Y + 26);
+    cout << "[Q] THOAT";
 }
 
 void draw(){
+    boardDelBlock();
+    int previewY = getDropPreviewY();
 
     for (int i = 0 ; i < H ; i++){
 
@@ -271,16 +359,102 @@ void draw(){
 
         for (int j = 0 ; j < GAME_W ; j++){
 
-            if (board[i][j] == ' ') {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
-                cout << '.';
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
+            if (i == 0 && j == 0)
+                cout << "╔";
+
+            else if (i == 0 && j == GAME_W-1)
+                cout << "╗";
+
+            else if (i == H-1 && j == 0)
+                cout << "╚";
+
+            else if (i == H-1 && j == GAME_W-1)
+                cout << "╝";
+
+            else if (i == 0 || i == H-1)
+                cout << "═";
+
+            else if (j == 0 || j == GAME_W-1)
+                cout << "║";
+
+            else{
+
+                bool drawn = false;
+
+                // current block
+                for (int bi = 0 ; bi < 4 ; bi++){
+
+                    for (int bj = 0 ; bj < 4 ; bj++){
+
+                        if (blocks[b][bi][bj] != ' '){
+
+                            if (i == y + bi &&
+                                j == x + bj){
+
+                                cout << blocks[b][bi][bj];
+
+                                drawn = true;
+                            }
+                        }
+                    }
+                }
+
+                // preview block
+                if (!drawn){
+
+                    for (int bi = 0 ; bi < 4 ; bi++){
+
+                        for (int bj = 0 ; bj < 4 ; bj++){
+
+                            if (blocks[b][bi][bj] != ' '){
+
+                                if (i == previewY + bi &&
+                                    j == x + bj){
+
+                                    SetConsoleTextAttribute(
+                                        GetStdHandle(STD_OUTPUT_HANDLE),
+                                        8
+                                    );
+
+                                    cout << blocks[b][bi][bj];
+
+                                    SetConsoleTextAttribute(
+                                        GetStdHandle(STD_OUTPUT_HANDLE),
+                                        10
+                                    );
+
+                                    drawn = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // empty
+                if (!drawn){
+
+                    if (board[i][j] == ' '){
+
+                        SetConsoleTextAttribute(
+                            GetStdHandle(STD_OUTPUT_HANDLE),
+                            8
+                        );
+
+                        cout << '.';
+
+                        SetConsoleTextAttribute(
+                            GetStdHandle(STD_OUTPUT_HANDLE),
+                            10
+                        );
+                    }
+
+                    else
+                        cout << board[i][j];
+                }
             }
-            else
-                cout << board[i][j];
         }
     }
-
+    block2Board();
     drawInfo();
 }
 
@@ -307,14 +481,6 @@ void drawMenu(){
 "             |   | ,'                |   |.'   '---'",
 "             `----'                  `---'"
     };
-
-    int longest = 0;
-
-    for (int i = 0 ; i < 15 ; i++){
-
-        if (logo[i].length() > longest)
-            longest = logo[i].length();
-    }
 
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 
@@ -376,9 +542,7 @@ void centerGame(){
     int consoleHeight =
         csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
-    int totalWidth = GAME_W + 30;
-
-    OFFSET_X = (consoleWidth - totalWidth) / 2;
+    OFFSET_X = (consoleWidth - GAME_W - 45) / 2;
 
     OFFSET_Y = (consoleHeight - H) / 2;
 }
@@ -392,7 +556,9 @@ int main(){
 
     system("mode con cols=140 lines=40");
     system("cls");
+
     centerGame();
+
     system("color 0A");
 
     srand(time(0));
@@ -408,48 +574,63 @@ int main(){
 
     initBoard();
 
+    int tick = 0;
+
     while (1){
 
         boardDelBlock();
 
-        if (kbhit()){
+        if (GetAsyncKeyState('A') & 0x8000){
 
-            char c = getch();
-
-            if (c == 'a' && canMove(-1,0))
+            if (canMove(-1,0))
                 x--;
-
-            if (c == 'd' && canMove(1,0))
-                x++;
-
-            if (c == 'x' && canMove(0,1))
-                y++;
-
-            if (c == 'q')
-                break;
         }
 
-        if (canMove(0,1))
-            y++;
+        if (GetAsyncKeyState('D') & 0x8000){
 
-        else{
+            if (canMove(1,0))
+                x++;
+        }
 
-            block2Board();
+        if (GetAsyncKeyState('X') & 0x8000){
 
-            removeLine();
+            if (canMove(0,1))
+                y++;
+        }
 
-            x = (GAME_W - 2) / 2;
-            y = 0;
+        if (GetAsyncKeyState('Q') & 0x8000){
 
-            b = nextBlock;
-            nextBlock = rand() % 8;
+            break;
+        }
+
+        tick++;
+
+        if (tick >= max(1, 4 - level / 2)){
+
+            if (canMove(0,1))
+                y++;
+
+            else{
+
+                block2Board();
+
+                removeLine();
+
+                x = (GAME_W - 2) / 2;
+                y = 0;
+
+                b = nextBlock;
+                nextBlock = rand() % 8;
+            }
+
+            tick = 0;
         }
 
         block2Board();
 
         draw();
 
-        Sleep(max(50, 200 - level * 10));
+        Sleep(16);
     }
 
     return 0;
