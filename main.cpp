@@ -7,8 +7,8 @@
 
 using namespace std;
 
-#define H 18
-#define GAME_W 36
+#define H 28
+#define GAME_W 30
 
 int OFFSET_X;
 int OFFSET_Y;
