@@ -414,7 +414,7 @@ void removeLine(){
     for (int blink = 0 ; blink < 3 ; blink++){
         for (int i = 1; i < H-1; i++) {
             if (fullRows[i]) {
-                for (int j = 2 ; j < GAME_W-2 ; j++) board[i][j] = '#';
+                for (int j = 1 ; j < GAME_W-1 ; j++) board[i][j] = '#';
             }
         }
 
@@ -485,7 +485,7 @@ void removeLine(){
 void drawNextBlock(){
 
     int infoX = OFFSET_X + GAME_W + 6;
-    int infoY = OFFSET_Y + 10;
+    int infoY = OFFSET_Y + 16;
 
     gotoxy(infoX, infoY);
     cout << "NEXT BLOCK";
@@ -575,7 +575,7 @@ void drawInfo(){
     gotoxy(infoX, infoY + 12);
     cout << "HIGH SCORE : " << highScore;
 
-    gotoxy(infoX, infoY + 15);
+    gotoxy(infoX, infoY + 14);
     cout << "LINES : " << linesCleared;
 
     drawNextBlock();
@@ -1014,16 +1014,13 @@ int main(){
                     Sleep(150);
                 }
 
-                if (_kbhit()){
+                if (GetAsyncKeyState('Q') & 0x8000){
 
-                    char c = _getch();
+                    quitToMenu = true;
 
-                    if (c == 'q' || c == 'Q'){
+                    while (GetAsyncKeyState('Q') & 0x8000);
 
-                        quitToMenu = true;
-
-                        break;
-                    }
+                    break;
                 }
             }
 
@@ -1067,20 +1064,20 @@ int main(){
             Sleep(1);
         }
 
-            if (quitToMenu){
+        if (quitToMenu){
 
-                delete currentPiece;
-                delete nextPiece;
+            delete currentPiece;
+            delete nextPiece;
 
-                currentPiece = nullptr;
-                nextPiece = nullptr;
+            currentPiece = nullptr;
+            nextPiece = nullptr;
 
-                FlushConsoleInputBuffer(
-                    GetStdHandle(STD_INPUT_HANDLE)
-                );
+            FlushConsoleInputBuffer(
+                GetStdHandle(STD_INPUT_HANDLE)
+            );
 
-                continue;
-            }
+            continue;
+        }
     }
 
     return 0;
