@@ -368,7 +368,12 @@ void rotateBlock() {
                     }
                 }
             }
+           
         }
+         if (ok) {
+                canRotate = true;
+                currentPiece->x = testX;
+            }
     }
 }
 
@@ -628,8 +633,6 @@ int getDropPreviewY(Piece* piece){
 
 void draw(Piece* piece){
 
-    boardDelBlock();
-
     int previewY = getDropPreviewY(piece);
 
     for (int i = 0 ; i < H ; i++){
@@ -750,8 +753,6 @@ void draw(Piece* piece){
             }
         }
     }
-
-    block2Board();
 
     drawInfo();
 }
