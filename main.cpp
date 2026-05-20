@@ -328,32 +328,38 @@ bool canMove(Piece* piece, int dx, int dy) {
     return true;
 }
 
-void rotateBlock() {
-    boardDelBlock();
+void rotateBlock(){
 
     char oldShape[4][4];
+
     int oldX = currentPiece->x;
 
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            oldShape[i][j] = currentPiece->shape[i][j];
+    for (int i = 0; i < 4; i++){
+
+        for (int j = 0; j < 4; j++){
+
+            oldShape[i][j] =
+                currentPiece->shape[i][j];
         }
     }
 
     currentPiece->rotate();
 
-    int kick[] = { 0, 1, -1, 2, -2 };
+    int kick[] = {0, 1, -1, 2, -2};
+
     bool canRotate = false;
 
-    for (int k = 0; k < 5 && !canRotate; k++) {
+    for (int k = 0; k < 5 && !canRotate; k++){
+
         bool ok = true;
+
         int testX = oldX + kick[k];
 
-        for (int i = 0; i < 4 && ok; i++) {
+        for (int i = 0; i < 4 && ok; i++){
 
-            for (int j = 0; j < 4; j++) {
+            for (int j = 0; j < 4; j++){
 
-                if (currentPiece->shape[i][j] != ' ') {
+                if (currentPiece->shape[i][j] != ' '){
 
                     int tx = testX + j;
                     int ty = currentPiece->y + i;
@@ -367,6 +373,27 @@ void rotateBlock() {
                         break;
                     }
                 }
+            }
+        }
+
+        if (ok){
+
+            canRotate = true;
+
+            currentPiece->x = testX;
+        }
+    }
+
+    if (!canRotate){
+
+        currentPiece->x = oldX;
+
+        for (int i = 0; i < 4; i++){
+
+            for (int j = 0; j < 4; j++){
+
+                currentPiece->shape[i][j] =
+                    oldShape[i][j];
             }
         }
     }
@@ -457,8 +484,8 @@ void removeLine(){
     level = (score / 500) + 1;
 
     if (level > oldLevel) {
-        int notiX = OFFSET_X + GAME_W + 5;
-        int notiY = OFFSET_Y + 20;
+        int notiX = OFFSET_X - 24;
+        int notiY = OFFSET_Y + 18;
 
         for(int blink = 0; blink < 3; blink++) {
             gotoxy(notiX, notiY);     cout << "***************";
